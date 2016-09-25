@@ -1,5 +1,8 @@
 # Compiled Object files
 *.slo
+*.suo
+*.idb
+*.sdf
 *.lo
 *.o
 *.obj
@@ -27,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+*.ilk
+*.pdb
+*.tlog
+*.log
