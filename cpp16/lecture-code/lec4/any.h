@@ -32,6 +32,14 @@ public:
 	any & operator=(const any & rhs)
 	{
 		any(rhs).swap(*this);
+		return *this;
+	}
+
+
+	any & operator=(any && rhs)
+	{
+		any(std::move(rhs)).swap(*this);
+		return *this;
 	}
 
 	template<class T>
@@ -45,6 +53,16 @@ public:
 	{
 		std::swap(this->data, rhs.data);
 		return *this;
+	}
+
+	bool has_value() const
+	{
+		return data == nullptr;
+	}
+
+	void reset()
+	{
+		any().swap(*this);
 	}
 
 	struct IPresenter
@@ -73,12 +91,47 @@ public:
 		Type value;
 	};
 
-//private:
+private:
 	IPresenter * data;
+
+	template<class T>
+	friend T * any_cast(any * op);
 };
 
-template<class T>
-T any_cast(const any & obj)
+class bad_any_cast :
+	public std::bad_cast
 {
-	return static_cast<any::Holder<T> *>(obj.data)->value;
+public:
+	virtual const char * what() const override
+	{
+		return "bad_any_cast exception";
+	}
+};
+
+
+template<class T>
+T * any_cast(any * op)
+{
+	bool isSame = op->data->type() == typeid(T);
+	return op && isSame ?
+		&(static_cast<any::Holder<T> *>(op->data)->value) :
+		nullptr;
+}
+
+template<class T>
+T * any_cast(const any * op)
+{
+	return any_cast<T>(const_cast<any*>(op));
+}
+
+
+template<class T>
+inline T any_cast(const any & op)
+{
+	auto ptr = any_cast<T>(&op);
+
+	if (ptr == nullptr)
+		throw bad_any_cast();
+
+	return *ptr;
 }
