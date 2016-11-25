@@ -1,0 +1,3 @@
+[submodule "cpp16/lecture-code/lec12/relacy"]
+	path = cpp16/lecture-code/lec12/relacy
+	url = https://github.com/dvyukov/relacy
