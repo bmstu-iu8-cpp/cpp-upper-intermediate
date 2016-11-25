@@ -54,7 +54,7 @@
 //			return false;
 //		}
 //
-//		while (!_head.compare_exchange_strong(old_head, old_head->next))
+//		while (old_head && !_head.compare_exchange_strong(old_head, old_head->next))
 //		{
 //			; // empty loop
 //		}
