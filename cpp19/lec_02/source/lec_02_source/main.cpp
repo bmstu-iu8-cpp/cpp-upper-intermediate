@@ -20,7 +20,8 @@ void ThreadWorker(std::shared_ptr<SQLConnection> connection) {
 
 int main() {
   // Unique ptr sample.
-  auto file_storage = std::make_unique<FileStorage>("db.txt");
+  std::unique_ptr<FileStorage> file_storage =
+      std::make_unique<FileStorage>("db.txt");
 
   HttpServer server(std::move(file_storage));
 
@@ -28,10 +29,10 @@ int main() {
   std::cout << server.Save("user two") << std::endl;
   std::cout << server.Save("user three") << std::endl;
 
-
   // Shared ptr example.
-  auto sql_connection = SQLConnection::Create("postgresql://localost:5000/students");
-  
+  std::shared_ptr<SQLConnection> sql_connection =
+      SQLConnection::Create("postgresql://localost:5000/students");
+
   std::thread th1(ThreadWorker, sql_connection);
   std::thread th2(ThreadWorker, sql_connection);
   std::thread th3(ThreadWorker, sql_connection);

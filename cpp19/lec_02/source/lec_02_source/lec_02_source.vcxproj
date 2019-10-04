@@ -119,6 +119,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="custom_deleters.cpp" />
     <ClCompile Include="file_storage.cpp" />
     <ClCompile Include="http_server.cpp" />
     <ClCompile Include="main.cpp" />
