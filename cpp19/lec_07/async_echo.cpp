@@ -42,7 +42,6 @@ int main(int argc, char* argv[]) {
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 80));
 
     DoAccept(acceptor, io_service);
-    // AsyncHttpServer s(io_service, std::atoi("80"));
 
     io_service.run();
   } catch (std::exception& e) {
