@@ -277,6 +277,7 @@
             
             <h3><a id="user-content-лекция-7" class="anchor" href="#лекция-7" aria-hidden="true"></a>Лекция 7</h3>
 <h2><a id="user-content-распространенные-практики-в-многопоточности" class="anchor" href="#распространенные-практики-в-многопоточности" aria-hidden="true"></a>Распространенные практики в многопоточности</h2>
+<aside class="notes"> Лекция посвящена распространенным практикам, используемым в многопоточности. Все, что будет рассказано на лекции, применимо к любому языку программирования, а не только к С++.</aside>
 
             </section>
     
@@ -288,10 +289,11 @@
             
             <h3><a id="user-content-содержание" class="anchor" href="#содержание" aria-hidden="true"></a>Содержание</h3>
 <ul>
-<li>пул потоков (thread pool)</li>
-<li>асинхронное программирование</li>
-<li>атомарные операции и lock-free</li>
+<li>пул потоков (thread pool);</li>
+<li>асинхронное программирование;</li>
+<li>атомарные операции и lock-free.</li>
 </ul>
+<aside class="notes"> блаблабла, про что лекция и как все это полезно и используется. а lockfree можно не узать но важно знать, что это есть</aside>
 
             </section>
     
@@ -302,34 +304,43 @@
     <section>
         <section >
             <h2><a id="user-content-пул-потоков" class="anchor" href="#пул-потоков" aria-hidden="true"></a>Пул потоков</h2>
+<aside class="notes"> первая тема которую рассмотрим на лекции будет Пул потоков</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-переключение-контекста" class="anchor" href="#переключение-контекста" aria-hidden="true"></a>Переключение контекста</h3>
 <img src="./res/multitask2.jpg" width=100% alt="content" />
+<aside class="notes"> тут рассказать про проблему запуска 100500 потоков, что каждый поток затрачивает ресурсы ОС, есть НЕбесплатное переключение контекста потоков и пр</aside>
+
             </section>
         
             <section >
                 <h3><a id="user-content-переключение-контекста-1" class="anchor" href="#переключение-контекста-1" aria-hidden="true"></a>Переключение контекста</h3>
-<p>Большое количество потоков добаляет накладные расходы на планирование, выполнение потоков, на хранение контекста потоков и пр.</p>
+<p>Большое количество потоков требует больших вычислительных ресурсов на их планирование и выполнение.</p>
+<p>Чем больше потоков, тем больше переключений и тем больше памяти требуется для хранения контекстов.</p>
+<aside class="notes"> еще раз быстро рассказать, что такое переключение контекста, можно на примере картинки выше</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-переключение-контекста-2" class="anchor" href="#переключение-контекста-2" aria-hidden="true"></a>Переключение контекста</h3>
 <p>Зачастую бывает полезно ограничить количество потоков в приложении, чтобы снизить накладные расходы и достичь наибольшей выгоды от многопоточности.</p>
+<aside class="notes"> можно просто зачитать слайд</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-очередь-перед-кассой" class="anchor" href="#очередь-перед-кассой" aria-hidden="true"></a>Очередь перед кассой</h3>
 <img src="./res/queue.jpg"/>
+<aside class="notes"> Представим, что вы в магазине. Вместе с вами там еще сотни людей. А теперь представим, что, чтобы расчитать вашу покупку, к вам подходит новый нанятый кассир, который считает ваш товар, принимает у вас деньги, отдает сдачу. А после того, как этот кассир обслужил вас, его увольняют и нанимают нового кассира для другого покупателя. Это НЕВЫГОДНО. Так примерно и происходит, если под каждую задачу запускать новый поток. ОС - магазин, покупатели - задачи, кассиры - потоки.</aside>
+
             </section>
         
             <section >
                 <h3><a id="user-content-пул-потоков-1" class="anchor" href="#пул-потоков-1" aria-hidden="true"></a>Пул потоков</h3>
 <p>Проблему огромного количества потоков в приложении призван решить пул потоков.</p>
+<aside class="notes"> Но магазины поступают иначе, они нанимают нескольких кассиров и все покупатели обслуживаются этим ограниченным количеством кассиров. Эта идея лежит в основе пула потоков.</aside>
 
             </section>
         
@@ -337,6 +348,7 @@
                 <h3><a id="user-content-пул-потоков-2" class="anchor" href="#пул-потоков-2" aria-hidden="true"></a>Пул потоков</h3>
 <p>В стандартной библиотеке C++ нет пула потоков.</p>
 <p>Но его несложно реализовать с помощью стандартных средств C++ для своих целей.</p>
+<aside class="notes"> стандартная библиотека С++ предоставляет возможности для реализации высокоуровневых средств. Так можно реализовать свой пул потоков, который будет оптимизирован под ваш проект.</aside>
 
             </section>
         
@@ -349,24 +361,29 @@
     
     <section>
         <section >
-            <h3><a id="user-content-пример-treadpool" class="anchor" href="#пример-treadpool" aria-hidden="true"></a>Пример <code>TreadPool</code></h3>
-<pre><code class="language-cpp">class TreadPool {
- public:
-  ThreadPool(size_t workers_count);
-
-  template&lt;class F,
-           class R=std::result_of_t&lt;F&amp;()&gt;,
-           class... Args&gt;
-  std::future&lt;R&gt; enqueue(F&amp;&amp; func, Args&amp;&amp;... args);
-};
+            <h3><a id="user-content-пример-threadpool" class="anchor" href="#пример-threadpool" aria-hidden="true"></a>Пример <code>ThreadPool</code></h3>
+<pre><code class="language-cpp">1  #include &lt;type_traits&gt;
+2  #include &lt;future&gt;
+3
+4  class ThreadPool {
+5  public:
+6   ThreadPool(size_t workers_count);
+7
+8   template&lt;class F,
+9            class... Args,
+10           class R=std::result_of_t&lt;F()&gt;&gt;
+11   std::future&lt;R&gt; enqueue(F&amp;&amp; func, Args&amp;&amp;... args);
+12 };
 </code></pre>
+<aside class="notes"> Можно реализовать такой класс пул потокв. Кратко рассказать, что за конструктор и что за <code>workers</code></aside>
 
             </section>
         
             <section >
-                <h3><a id="user-content-пример-treadpool-1" class="anchor" href="#пример-treadpool-1" aria-hidden="true"></a>Пример <code>TreadPool</code></h3>
+                <h3><a id="user-content-пример-threadpool-1" class="anchor" href="#пример-threadpool-1" aria-hidden="true"></a>Пример <code>ThreadPool</code></h3>
 <p>Основной метод любого пула потоков – это метод, с помощью которого можно добавлять задачу на выполение.</p>
 <p>В примере выше, это метод <code>enqueue</code>.</p>
+<aside class="notes"> Основной метод любого пула потоков это пушить задачи на выполнение.</aside>
 
             </section>
         
@@ -379,35 +396,38 @@
 <li>принимает функцию <code>func</code>, которую необходимо выполнить</li>
 <li>и принимает аргументы <code>args</code>, которые необходимо передать в функцию <code>func</code> во время выполнения</li>
 </ul>
+<aside class="notes"> Рассказать, что за аргументы, что возвращает. Рассказать, что при вызове этого метода задача ставится в очередь на исполнение (как покупатель подходит на кассу). Как только кассир, в смысле поток освобождается, задача начинает выполняться. Скорее всего тут будут вопросы про производительность, типа как же так наши задачи в очереди ждут а не выполняются. Надо успокоить детей, что это норма и все равно так получается эффективнее, чем запускать 100500 потоков.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-метод-enqueue-1" class="anchor" href="#метод-enqueue-1" aria-hidden="true"></a>Метод <code>enqueue</code></h3>
-<p>Аргументы в точности повторяют аргументы функции <code>std::async</code>.</p>
-<p>По факту, <code>std::async</code> <strong>может</strong> не создавать новый поток для исполнения задачи, а использовать поток из встроенного пула, но это зависит от конкретной реализации b компилятора.</p>
+<p>Аргументы повторяют аргументы функции <code>std::async</code> (за исключением первого параметра <code>std::launch policy</code>).</p>
+<p>По факту, <code>std::async</code> <strong>может</strong> не создавать новый поток для исполнения задачи, а использовать поток из встроенного пула, но это зависит от конкретной реализации компилятора.</p>
+<aside class="notes"> тут заметку сделать, что все это есть в <code>std::async</code>, но стандартом не гарантируется, что <code>std::async</code> будет работать через пул потоков. Но может быть когда-то…</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-пример" class="anchor" href="#пример" aria-hidden="true"></a>Пример</h3>
-<pre><code class="language-cpp">// Создаем пул потоков на 10 потоков.
-static ThreadPool pool(10);
-
-Response GetRequest(std::string uri);
-
-void HttpHandler(Request req);
+<pre><code class="language-cpp">1  // Создаем пул потоков на 10 потоков.
+2  static ThreadPool pool(10);
+3
+4  Response GetRequest(std::string uri);
+5
+6  void HttpHandler(Request req);
 </code></pre>
-<pre><code class="language-cpp">// Добавляем задачу на выполение в пул потоков.
-pool.enqueue(HttpHandler, std::move(req));
+<pre><code class="language-cpp">7  // Добавляем задачу на выполение в пул потоков.
+8  pool.enqueue(HttpHandler, std::move(req));
 </code></pre>
-<pre><code class="language-cpp">// Добавляем задачу на выполение в пул потоков.
-std::future&lt;Response&gt; response =
-    pool.enqueue(GetRequest, &quot;http://cppreference.com/&quot;);
-// Working...
-// Получение результата функции GetRequest.
-std::cout &lt;&lt; response.get();
+<pre><code class="language-cpp">9  // Добавляем задачу на выполение в пул потоков.
+10 std::future&lt;Response&gt; response =
+11    pool.enqueue(GetRequest, &quot;http://cppreference.com/&quot;);
+12 // Working...
+13 // Получение результата функции GetRequest.
+14 std::cout &lt;&lt; response.get();
 </code></pre>
+<aside class="notes"> просто пример, как можно использовать пул. в первом случае нам не важен результат, а во втором мы будем ждать.</aside>
 
             </section>
         
@@ -422,13 +442,16 @@ std::cout &lt;&lt; response.get();
         <section >
             <h3><a id="user-content-как-устроен-пул-потоков" class="anchor" href="#как-устроен-пул-потоков" aria-hidden="true"></a>Как устроен пул потоков</h3>
 <img src="./res/ThreadPool.png" width=100%>
+<aside class="notes"> объяснить как работают пулы потоков.</aside>
+
             </section>
         
             <section >
                 <h3><a id="user-content-как-устроен-пул-потоков-1" class="anchor" href="#как-устроен-пул-потоков-1" aria-hidden="true"></a>Как устроен пул потоков</h3>
-<p>По сути, это применение шаблона producer-consumer.</p>
-<p>В качестве consumer’ов выступают потоки, которые выполняют поставленные в очередь задачи.</p>
-<p>В качестве producer’ов – пользовательский код.</p>
+<p>По сути, это применение шаблона <strong>producer-consumer</strong>.</p>
+<p>В качестве <strong>consumer’ов</strong> выступают потоки, которые выполняют поставленные в очередь задачи.</p>
+<p>В качестве <strong>producer’ов</strong> – пользовательский код.</p>
+<aside class="notes"> объяснить как работают пулы потоков.</aside>
 
             </section>
         
@@ -443,13 +466,15 @@ std::cout &lt;&lt; response.get();
         <section >
             <h3><a id="user-content-модификации-пула-потоков" class="anchor" href="#модификации-пула-потоков" aria-hidden="true"></a>Модификации пула потоков</h3>
 <p>Иногда, чтобы решить задачу в “виртуальном” мире достаточно посмотреть как подобная задача решается в “реальном” мире.</p>
+<aside class="notes"> пулы потоков бывают разные, под разные задачи. Кратко, можно рассказать про пул потоков в C#. Короче, просто рассказать, что можно выдумать разные и в разных проектах и разных языках бывают разные пулы.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-динамическое-добавление-и-снятие-потоков" class="anchor" href="#динамическое-добавление-и-снятие-потоков" aria-hidden="true"></a>Динамическое добавление и снятие потоков</h3>
 <p><em>В магазине не на всех кассах сидят кассиры. Но в случае большой загруженности магазина на свободные кассы приходят работники.</em></p>
-<p><em>Когда небольшая загруженность, кассиры начинают выполнять другую работу, либо берут отгулы, что экономит магазину ресурсы.</em></p>
+<p><em>В случае отсутствия покупателей кассиры могут выполнять другую работу, либо берут отгулы, что экономит магазину ресурсы.</em></p>
+<aside class="notes"> тут на аналогии рассказать, что может быть НЕ константное количество потоков, которые обрабатывают задачи.</aside>
 
             </section>
         
@@ -457,6 +482,7 @@ std::cout &lt;&lt; response.get();
                 <h3><a id="user-content-локальные-очереди-для-каждого-потока" class="anchor" href="#локальные-очереди-для-каждого-потока" aria-hidden="true"></a>Локальные очереди для каждого потока</h3>
 <p><em>У каждой кассы собираются небольшие очереди. Это помогает очередям двигаться быстрее, а не толкаться в большой очереди мешая друг другу добираться до свободных кассиров.</em></p>
 <p><em>Но иногда у одной кассы собирается большая очередь, а другие пустуют.</em></p>
+<aside class="notes"> тут на аналогии рассказать, что вместо одной очереди на все потоки, может быть по маленькой очереди на каждый поток. Типа потоки не бьются на синхронизацию данных в очереди. (см пул потокв в C#)</aside>
 
             </section>
         
@@ -471,10 +497,11 @@ std::cout &lt;&lt; response.get();
             
             <h3><a id="user-content-резюме" class="anchor" href="#резюме" aria-hidden="true"></a>Резюме</h3>
 <ul>
-<li>пул потоков предоставляет высокоуровневую абстракцию, позволяющую не задумываться о ручном управлении потоков</li>
-<li>пул потоков позвояет избежать накладных ресурсов на создание и уничтожение нового потока</li>
+<li>пул потоков предоставляет высокоуровневую абстракцию, позволяющую не задумываться о ручном управлении потоками</li>
+<li>пул потоков позволяет избежать накладных расходов на создание и уничтожение нового потока</li>
 <li>пул потоков помогает уменьшить суммарное время, затрачиваемое на переключение контекста потоков</li>
 </ul>
+<aside class="notes"> подвести итог, какие пулы потоков клевые – используйте их</aside>
 
             </section>
     
@@ -496,11 +523,15 @@ std::cout &lt;&lt; response.get();
         <section >
             <h3><a id="user-content-как-приготовить-ужин" class="anchor" href="#как-приготовить-ужин" aria-hidden="true"></a>Как приготовить ужин</h3>
 <img src="./res/pan.jpg" width=75%/>
+<aside class="notes"> есть два способа приготовить ужин. Рассказать, как готовить стейк: надо не отходя от плиты и скороводы ждать пока стейк две минуты прожарится на одной стороне, потом надо перевернуть его и опять НЕ отходя от плиты опять ждать. Приходится ждать, а не погамать в AoE 2… это Синхронный метод готовки ужина.</aside>
+
             </section>
         
             <section >
                 <h3><a id="user-content-как-приготовить-ужин-1" class="anchor" href="#как-приготовить-ужин-1" aria-hidden="true"></a>Как приготовить ужин</h3>
 <img src="./res/oven.jpg" width=75%/>
+<aside class="notes"> Но есть альтернативный способ приготовить ужин - асинхронный. Подготавливется мясо, солится, перчится, ставится в духовку, заводится будильник на полтора часа и все. Через полтора часа звонит будильник, вы идете к плите и ужин уже готов. А в то время, пока запекается мясо, можно заниматься другими делами.</aside>
+
             </section>
         
 
@@ -514,37 +545,40 @@ std::cout &lt;&lt; response.get();
         <section >
             <h3><a id="user-content-cинхронная-модель" class="anchor" href="#cинхронная-модель" aria-hidden="true"></a>Cинхронная модель</h3>
 <p>Обычно в программировании используется последовательное синхронное выполнение инструкций и вызовов функций, которые блокируют поток выполнения.</p>
+<aside class="notes"> пояснить что такое синхронное выполнение функций.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-пример-1" class="anchor" href="#пример-1" aria-hidden="true"></a>Пример</h3>
-<pre><code class="language-cpp">void Echo(tcp::socket socket) {
-  std::array&lt;char, 1024&gt; data;
-  while (true) {
-    // |read_some| - синхронная функция.
-    // Поток остановится до завершения |read_some|.
-    std::size_t n = socket.read_some(
-        boost::asio::buffer(data));
-
-    // |write_some| - синхронная функция.
-    // Поток остановится до завершения |write_some|.
-    socket.write_some(
-        boost::asio::buffer(data, n));
-  }
-}
+<pre><code class="language-cpp">1  void Echo(tcp::socket socket) {
+2    std::array&lt;char, 1024&gt; data;
+3    while (true) {
+4      // |read_some| - синхронная функция.
+5      // Поток остановится до завершения |read_some|.
+6      std::size_t n = socket.read_some(
+7        boost::asio::buffer(data));
+8
+9      // |write_some| - синхронная функция.
+10     // Поток остановится до завершения |write_some|.
+11     socket.write_some(
+12       boost::asio::buffer(data, n));
+13   }
+14 }
 </code></pre>
-<pre><code class="language-cpp">while (true) {
-  tcp::socket socket = acceptor.accept();
-  std::thread(Echo, std::move(socket)).detach();
-}
+<pre><code class="language-cpp">15 while (true) {
+16   tcp::socket socket = acceptor.accept();
+17   std::thread(Echo, std::move(socket)).detach();
+18 }
 </code></pre>
+<aside class="notes"> пояснить пример. Остановиться на том, что поток блокируется каждый раз когда доходит до синхронных функций, а ведь мог бы заниматься полезными вещами, а не ждать данных по сети</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-cинхронная-модель-1" class="anchor" href="#cинхронная-модель-1" aria-hidden="true"></a>Cинхронная модель</h3>
 <p>Одна из проблем такого подхода в том, что часто приходится ждать неких внешних событий: чтение файла с диска, передача/получение данных по сети и т.д.</p>
+<aside class="notes"> блаблабал, читай слайд</aside>
 
             </section>
         
@@ -552,6 +586,7 @@ std::cout &lt;&lt; response.get();
                 <h3><a id="user-content-cинхронная-модель-2" class="anchor" href="#cинхронная-модель-2" aria-hidden="true"></a>Cинхронная модель</h3>
 <p>При этом текущий поток вынужден ждать, а не выполнять полезную работу.</p>
 <p>Это приводит к проблемам производительности приложения.</p>
+<aside class="notes"> блаблабал, читай слайд</aside>
 
             </section>
         
@@ -564,56 +599,61 @@ std::cout &lt;&lt; response.get();
     
     <section>
         <section >
-            <h3><a id="user-content-асинхронное-модель" class="anchor" href="#асинхронное-модель" aria-hidden="true"></a>Асинхронное модель</h3>
+            <h3><a id="user-content-асинхронная-модель" class="anchor" href="#асинхронная-модель" aria-hidden="true"></a>Асинхронная модель</h3>
 <p>В асинхронной модели программирования поток может приостановить выполнение задачи, сохранив текущее состояние, и начать выполнение другой задачи.</p>
+<aside class="notes"> пояснить что такое асинхронное выполнение функций.</aside>
 
             </section>
         
             <section >
-                <h3><a id="user-content-асинхронное-модель-1" class="anchor" href="#асинхронное-модель-1" aria-hidden="true"></a>Асинхронное модель</h3>
+                <h3><a id="user-content-асинхронная-модель-1" class="anchor" href="#асинхронная-модель-1" aria-hidden="true"></a>Асинхронная модель</h3>
 <p>Системные вызовы выполняются в неблокирующем режиме, что позволяет потоку продолжить работу.</p>
+<aside class="notes"> можно обратиться к примеру про запекание мяса. что так поток так же в то время пока выполнятеся асинхронная фунцкия, поток делает другие действия.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-пример-2" class="anchor" href="#пример-2" aria-hidden="true"></a>Пример</h3>
-<pre><code class="language-cpp">void Echo(tcp::socket socket) {
-  std::array&lt;char, 1024&gt; data;
-  auto on_write_callback =
-      [=](boost::system::error_code ec, size_t n) {
-        Echo(std::move(socket));
-      };
-  auto on_read_callback =
-      [=](boost::system::error_code ec, size_t n) {
-        socket.async_write_some(
-            boost::asio::buffer(data, n), on_write_callback);
-      };
-  socket.async_receive(
-    boost::asio::buffer(data), on_read_callback);
-}
+<pre><code class="language-cpp">1  void Echo(tcp::socket socket) {
+2    std::array&lt;char, 1024&gt; data;
+3    auto on_write_callback =
+4        [=](boost::system::error_code ec, size_t n) {
+5          Echo(std::move(socket));
+6        };
+7    auto on_read_callback =
+8        [=](boost::system::error_code ec, size_t n) {
+9          socket.async_write_some(
+10             boost::asio::buffer(data, n), on_write_callback);
+11       };
+12   socket.async_receive(
+13     boost::asio::buffer(data), on_read_callback);
+14 }
 </code></pre>
-<pre><code class="language-cpp">void DoAccept() {
-  tcp::socket socket;
-  auto callback = [socket](boost::system::error_code ec) {
-    Echo(std::move(socket));
-    DoAccept();
-  };
-  acceptor.async_accept(socket, callback);
-}
+<pre><code class="language-cpp">15 void DoAccept() {
+16   tcp::socket socket;
+17   auto callback = [socket](boost::system::error_code ec) {
+18     Echo(std::move(socket));
+19     DoAccept();
+20   };
+21   acceptor.async_accept(socket, callback);
+22 }
 </code></pre>
+<aside class="notes"> пояснить пример. Остановиться на том, что потоки не блокируются. И вообще всё это может выполнять один поток. Еще обратить внимание на работу callback’ов. И на рекурсию в DoAccept.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-замечание" class="anchor" href="#замечание" aria-hidden="true"></a>Замечание</h3>
-<p>Представленный выше код является псевдокодом. Реальный код не представлен на слайдах, для упрощения понимания примера.</p>
+<p>Представленный выше код является псевдокодом. Реальный код не представлен на слайдах для упрощения понимания примера.</p>
 <p>Чтобы увидеть работающий код, смотрите пример к лекции.</p>
+<aside class="notes"> блаблабал, читай слайд. В примере выше объекты не дожидаются callback’ов… поэтому скажи что это псевдо код для понимания, а есть реальный пример на github’e. Этот пример можно разобрать в конце лекции, если останется время. Выложу позже.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-псюсы-асинхронности" class="anchor" href="#псюсы-асинхронности" aria-hidden="true"></a>Псюсы асинхронности</h3>
-<p>Использование асинхронного программирования позволяет одному потоку обрабатывать несколько сетевых соединений, а не проставивать пока выполняется системный вызов одного соединения.</p>
+<p>Использование асинхронного программирования позволяет одному потоку обрабатывать несколько задач, а не простаивать, пока выполняется системный вызов.</p>
+<aside class="notes"> блаблабал, читай слайд. Может что еще добавишь.</aside>
 
             </section>
         
@@ -627,51 +667,61 @@ std::cout &lt;&lt; response.get();
     <section>
         <section >
             <h3><a id="user-content-функции-обратного-вызова" class="anchor" href="#функции-обратного-вызова" aria-hidden="true"></a>Функции обратного вызова</h3>
-<p>Функции обратного вызова (callback) – функции, которые будут вызываны после того, как завершится процесс запущенный в асинхронном режиме.</p>
+<p>Функции обратного вызова (callback) – функции, которые будут вызываны после того, как завершится задача, запущенная в асинхронном режиме.</p>
+<aside class="notes"> блаблабал, читай слайд. Может что еще добавишь.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-callback" class="anchor" href="#callback" aria-hidden="true"></a>Callback</h3>
-<p>С помощью callback’ов получается обрабатывать результат асинхронных фунций.</p>
+<p>С помощью callback’ов можно обрабатывать результат асинхронных операций.</p>
+<aside class="notes"> блаблабал, читай слайд. Может что еще добавишь. Рассказать, что это способ обработать результат асинхронных операций.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-асинхронное-приготовление-ужина" class="anchor" href="#асинхронное-приготовление-ужина" aria-hidden="true"></a>Асинхронное приготовление ужина</h3>
 <img src="./res/oven.jpg" width=75%/>
+<aside class="notes"> Рассмотрим Callback для нашей асинхронной операции - приготовить ужин. После того как ужин приготовился, результат этой операции надо как обработать. Как?</aside>
+
             </section>
         
             <section >
                 <h3><a id="user-content-пример-callback" class="anchor" href="#пример-callback" aria-hidden="true"></a>Пример callback</h3>
 <img src="./res/oven_callback.jpg"  width=80%/>
+<aside class="notes"> Конечно же сожрать! Поэтому Callback к нашей асинхронной операции будет: достать ужин из духовки, поставить на стол, разрезать и сожрать.</aside>
+
             </section>
         
             <section >
                 <h3><a id="user-content-callback-1" class="anchor" href="#callback-1" aria-hidden="true"></a>Callback</h3>
-<pre><code class="language-cpp">socket.async_receive(boost::asio::buffer(data), on_read_callback);
+<pre><code class="language-cpp">1 socket.async_receive(boost::asio::buffer(data), on_read_callback);
 </code></pre>
 <p>В примере лямбда <code>on_read_callback</code> является callback-функцией.</p>
 <p>Лямбда <code>on_read_callback</code> будет вызвана после того как будут получены данные по сети и завершится системный вызов.</p>
+<aside class="notes"> блаблабал, читай слайд. Рассказать, что в асинхронную фукнцию в качестве параметра передается Callback.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-проблемы-callback-функций" class="anchor" href="#проблемы-callback-функций" aria-hidden="true"></a>Проблемы callback-функций</h3>
 <p>Код с использованием callback-функций становится запутанным, нарушается последовательность кода.</p>
-<p>Легко “заблудитья”, в какой момент и в каком порядке будут вызываться callback-функции.</p>
+<p>Легко “заблудиться”, в какой момент и в каком порядке будут вызываться callback-функции.</p>
+<aside class="notes"> блаблабал, читай слайд. Рассказать как все плохо.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-проблемы-callback-функций-1" class="anchor" href="#проблемы-callback-функций-1" aria-hidden="true"></a>Проблемы callback-функций</h3>
-<p>Но куда более проблематично, всегда необходимо <strong>заботиться о времени жизни объектов</strong>, которые используются в callback-функциях.</p>
+<p>Всегда необходимо <strong>заботиться о времени жизни объектов</strong>, которые используются в callback-функциях.</p>
+<aside class="notes"> блаблабал, читай слайд. А еще рассказать что если в языке программирования нет сборщика мусора, то надо очень беспокоиться о времени жизни объектов.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-совет" class="anchor" href="#совет" aria-hidden="true"></a>Совет</h3>
 <p>Всегда, когда имеете дело с callback-функциями, думайте о времени жизни объектов, с которыми работаете в callback’ах.</p>
+<aside class="notes"> очень надо беспокоиться о времени жизни объектов.</aside>
 
             </section>
         
@@ -686,35 +736,39 @@ std::cout &lt;&lt; response.get();
         <section >
             <h3><a id="user-content-сопрограммы" class="anchor" href="#сопрограммы" aria-hidden="true"></a>Сопрограммы</h3>
 <p>Чтобы решить проблемы, связанные с использованием callback-функций, можно воспользоваться сопрограммами (coroutine).</p>
+<aside class="notes"> блаблабал, читай слайд.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-сопрограммы-1" class="anchor" href="#сопрограммы-1" aria-hidden="true"></a>Сопрограммы</h3>
 <p>Сопрограмми называются функции, имеющие <strong>несколько точек входа</strong>, в то время как, у обычных функций есть только <strong>одна</strong>.</p>
+<aside class="notes"> Рассказать, чем отличаются сопрограммы от функций. Что они бывают stackfull и stackless. Не вдаваться в подробности, чем отличаются. Просто рассказать, что бывают разные. Типа stackfull - с подменой стека, stackless - компилятор преобразует код в конечный автомата.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-пример-3" class="anchor" href="#пример-3" aria-hidden="true"></a>Пример</h3>
-<pre><code class="language-cpp">awaitable&lt;void&gt; Echo(tcp::socket socket) { // &lt;- Entry point 1.
-  std::array&lt;char, 1024&gt; data;
-  while (true) {
-    std::size_t n = co_await   socket.async_read_some(
-        boost::asio::buffer(data), use_awaitable);
-    // &lt;- Entry point 2.
-    co_await   async_write(
-        socket, boost::asio::buffer(data, n), use_awaitable);
-    // &lt;- Entry point 3.
-  }
-}
+<pre><code class="language-cpp">1  awaitable&lt;void&gt; Echo(tcp::socket socket) { // &lt;- Entry point 1.
+2    std::array&lt;char, 1024&gt; data;
+3    while (true) {
+4      std::size_t n = co_await   socket.async_read_some(
+5          boost::asio::buffer(data), use_awaitable);
+6      // &lt;- Entry point 2.
+7      co_await   async_write(
+8          socket, boost::asio::buffer(data, n), use_awaitable);
+9      // &lt;- Entry point 3.
+10     // some code...
+11   }
+12 }
 </code></pre>
-<pre><code class="language-cpp">while (true) {
-  tcp::socket socket = co_await   acceptor.async_accept(
-      use_awaitable);
-  Echo(std::move(socket));
-}
+<pre><code class="language-cpp">1  while (true) {
+2    tcp::socket socket = co_await  acceptor.async_accept(
+3        use_awaitable);
+4    Echo(std::move(socket));
+5  }
 </code></pre>
+<aside class="notes"> Пояснить пример. Рассазать что когда вызывается co_await приостанавливает сопрограмму и возвращает управление вызывающему коду. У функции Echo есть 3 точки входа, они обозначены комментариями. Рассказать как работает.</aside>
 
             </section>
         
@@ -722,28 +776,32 @@ std::cout &lt;&lt; response.get();
                 <h3><a id="user-content-точки-входа" class="anchor" href="#точки-входа" aria-hidden="true"></a>Точки входа</h3>
 <p>Функция <code>Echo</code> является сопрограммой. У нее три точки входа:</p>
 <ol>
-<li>Как у обычных функций в начале тела функции</li>
-<li>После асинхронного чтения данных из сокета.</li>
+<li>Как у обычных функций в начале тела функции;</li>
+<li>После асинхронного чтения данных из сокета;</li>
 <li>После асинхронной записи данных в сокет.</li>
 </ol>
+<aside class="notes"> вспомогательный слайд для слайда выше</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-co_await" class="anchor" href="#co_await" aria-hidden="true"></a><code>co_await</code></h3>
 <p>Оператор <code>co_await</code> приостанавливает сопрограмму и возвращает управление вызывающему коду.</p>
+<aside class="notes"> ключевое слово, которое появится в C++20. помогает писать асинхронный код</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-co_await-1" class="anchor" href="#co_await-1" aria-hidden="true"></a><code>co_await</code></h3>
-<p>После того, как будут и завершится процесс, запущенный в асинхронной функции, сопрограмма продолжит свою работу с того места, где была приостановлена, т.е. со своей следующей точки входа.</p>
+<p>После того как завершится операция, запущенная в асинхронной функции, сопрограмма продолжит свою работу с того места, где была приостановлена, т.е. со своей следующей точки входа.</p>
+<aside class="notes"> блаблабал, читай слайд.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-преимущества-сопрограмм" class="anchor" href="#преимущества-сопрограмм" aria-hidden="true"></a>Преимущества сопрограмм</h3>
 <p>Использование сопрограмм позволяет писать асинхронный код, который выглядит как синхронный. Такой код проще реализовывать, отлаживать и использовать.</p>
+<aside class="notes"> блаблабал, читай слайд. Что сопрограммы круче чем callback’и. Гороздо проще использовать.</aside>
 
             </section>
         
@@ -768,6 +826,7 @@ std::cout &lt;&lt; response.get();
 <p>асинхронность полезна при обращении к потоку пользовательского интерфейса</p>
 </li>
 </ul>
+<aside class="notes"> подвести итог, какая асинхронность клевая – используйте её</aside>
 
             </section>
         
@@ -787,6 +846,7 @@ std::cout &lt;&lt; response.get();
 <p>сопрограммы полезны не только при асинхронности, например, еще и при реализации <a href="https://ru.wikipedia.org/wiki/%D0%98%D1%82%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80#%D0%93%D0%B5%D0%BD%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80%D1%8B">генераторов</a></p>
 </li>
 </ul>
+<aside class="notes"> подвести итог, что есть сопрограммы, есть Callback’и. Используется и то и другое</aside>
 
             </section>
         
@@ -810,7 +870,9 @@ std::cout &lt;&lt; response.get();
     <section>
         <section >
             <h3><a id="user-content-атомарные-vs-неатомарные" class="anchor" href="#атомарные-vs-неатомарные" aria-hidden="true"></a>Атомарные vs неатомарные</h3>
-<p>Операция называется <strong>атомарной</strong>, если она завершается в “один шаг” относительно других потоков, т.е. ни один поток не может наблюдать изменение частично завершенным.</p>
+<p>Операция называется <strong>атомарной</strong>, если она выполняется как единое целое, либо не выполняется вовсе. Т.е. она не может быть частично выполнена или частично не выполнена.</p>
+<p>Если один поток выполняет атомарную операцию, то другие потоки не могут “вмешаться” в выполнение этой операции (например, получить её промежуточное значение).</p>
+<aside class="notes"> Рассказать чем отличается атомарная операция от неатомарной.</aside>
 
             </section>
         
@@ -822,43 +884,45 @@ std::cout &lt;&lt; response.get();
         
             <section >
                 <h3><a id="user-content-неатомарная-переменная" class="anchor" href="#неатомарная-переменная" aria-hidden="true"></a>Неатомарная переменная</h3>
-<pre><code class="language-cpp">int global_count = 0;
-std::vector&lt;std::thread&gt; group;
-
-void inc() {
-  ++global_count;
-}
-
-for (int i = 0; i &lt; N; ++i) {
-  group.push_back(std::thread(inc));
-}
-for (auto&amp; th : group) {
-  th.join();
-}
-// global_count == ?
-std::cout &lt;&lt; global_count;
+<pre><code class="language-cpp">1  int global_count = 0;
+2  std::vector&lt;std::thread&gt; group;
+3
+4  void inc() {
+5    ++global_count;
+6  }
+7
+8  for (int i = 0; i &lt; N; ++i) {
+9    group.push_back(std::thread(inc));
+10 }
+11 for (auto&amp; th : group) {
+12   th.join();
+13 }
+14 // global_count == ?
+15 std::cout &lt;&lt; global_count;
 </code></pre>
+<aside class="notes"> Рассмотреть пример, и сказать, что никто не знает чему будет равна переменная global_count - UB.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-атомарная-переменная" class="anchor" href="#атомарная-переменная" aria-hidden="true"></a>Атомарная переменная</h3>
-<pre><code class="language-cpp">std::atomic&lt;int&gt; global_count = 0;
-std::vector&lt;std::thread&gt; group;
-
-void inc() {
-  ++global_count;
-}
-
-for (int i = 0; i &lt; N; ++i) {
-  group.push_back(std::thread(inc));
-}
-for (auto&amp; th : group) {
-  th.join();
-}
-// global_count == N
-std::cout &lt;&lt; global_count;
+<pre><code class="language-cpp">1  std::atomic&lt;int&gt; global_count = 0;
+2  std::vector&lt;std::thread&gt; group;
+3
+4  void inc() {
+5    ++global_count;
+6  }
+7
+8  for (int i = 0; i &lt; N; ++i) {
+9    group.push_back(std::thread(inc));
+10 }
+11 for (auto&amp; th : group) {
+12   th.join();
+13 }
+14 // global_count == N
+15 std::cout &lt;&lt; global_count;
 </code></pre>
+<aside class="notes"> Рассмотреть пример, и сказать, что global_count гарантированно будет равна N.</aside>
 
             </section>
         
@@ -874,38 +938,42 @@ std::cout &lt;&lt; global_count;
 <li><code>compare_exchange_weak()</code> - аналог CAS</li>
 <li>…</li>
 </ul>
+<aside class="notes"> рассказать, что есть несколько операций для атомарных операций, загрузка, сохранение, получение значения, инкрементирование и пр.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-cas-compare-and-swap" class="anchor" href="#cas-compare-and-swap" aria-hidden="true"></a>CAS (Compare and Swap)</h3>
 <p>Операция <strong>атомарно</strong> сравнивает значение одного объекта с другим и при равенстве измениет значение объекта.</p>
+<aside class="notes"> Но на одной операции остановимся подробнее, потому что она понадобится в LockFree.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-compare_exchange" class="anchor" href="#compare_exchange" aria-hidden="true"></a><code>compare_exchange</code></h3>
-<pre><code class="language-cpp">// Псевдокод. Вся функция работает атомарно.
-bool compare_exchange(T&amp; obj, T&amp; expected, T value) {
-  bool result = (obj == expected);
-  if (result) {
-
-    obj = value;
-
-  } else {
-
-    expected = obj;
-
-  }
-  return result;
-}
+<pre><code class="language-cpp">1  // Псевдокод. Вся функция работает атомарно.
+2  bool compare_exchange(T&amp; obj, T&amp; expected, T value) {
+3    bool result = (obj == expected);
+4    if (result) {
+5
+6      obj = value;
+7
+8    } else {
+9
+10      expected = obj;
+11
+12   }
+13   return result;
+14 }
 </code></pre>
+<aside class="notes"> Рассказать, что делает функция. И отметить, что все это происходит в “один момент”.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-compare_exchange-1" class="anchor" href="#compare_exchange-1" aria-hidden="true"></a><code>compare_exchange</code></h3>
 <p>Разница между <code>compare_exchange_weak</code> и <code>compare_exchange_strong</code> заключается в том, что <code>compare_exchange_weak</code> на некоторых платформах может вернуть <code>false</code> и <strong>НЕ</strong> выполнить обмен даже в случае <strong>равных</strong> значений.</p>
+<aside class="notes"> читай слайд. Может что-то придумаешь еще что сказать.</aside>
 
             </section>
         
@@ -920,15 +988,17 @@ bool compare_exchange(T&amp; obj, T&amp; expected, T value) {
         <section >
             <h3><a id="user-content-lock-free-программирование" class="anchor" href="#lock-free-программирование" aria-hidden="true"></a>Lock-free программирование</h3>
 <p>Неблокирующая синхронизация – подход в параллельном программировании, в котором принят отказ от традиционных примитивов блокировки.</p>
+<aside class="notes"> читай слайд. Типа есть неблокирующая синхронизация. Это альтернатива мьютексам, семафорам и прочим тяжеловестным штукам.</aside>
 
             </section>
         
             <section >
-                <h3><a id="user-content-преимущества-lock-free" class="anchor" href="#преимущества-lock-free" aria-hidden="true"></a>Преимущества lock-free</h3>
+                <h3><a id="user-content-недостатки-блокировок" class="anchor" href="#недостатки-блокировок" aria-hidden="true"></a>Недостатки блокировок</h3>
 <ul>
-<li>блокировки довольно медленные операции</li>
+<li>блокировки - довольно медленные операции</li>
 <li>при блокировках поток с низким приоритетом может заблокировать поток, с более высоким приоритетом</li>
 </ul>
+<aside class="notes"> обратить внимание на второй пункт. Если мьютекс захватит поток с низким приоритетом, то поток с высоким будет ждать, пока не выполнится с меньшим… плохо, долго</aside>
 
             </section>
         
@@ -942,13 +1012,15 @@ bool compare_exchange(T&amp; obj, T&amp; expected, T value) {
 <p>Операция называется wait-free, если она завершается за определенное количество шагов, не зависящих от состояние и действий других потоков.</p>
 </li>
 </ul>
+<aside class="notes"> читай слайд. просто определения для экзамена.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-реализация-lock-free" class="anchor" href="#реализация-lock-free" aria-hidden="true"></a>Реализация lock-free</h3>
 <p>Неблокирующие алгоритмы строятся на атомарных операциях.</p>
-<p>Одна из самых значимых операций при lock-free программирование – это сравнение с обменом (CAS).</p>
+<p>Одна из самых значимых операций при lock-free программировании – это сравнение с обменом (CAS).</p>
+<aside class="notes"> а вот и операция CAS пригодилась.</aside>
 
             </section>
         
@@ -969,55 +1041,54 @@ bool compare_exchange(T&amp; obj, T&amp; expected, T value) {
         
             <section >
                 <h3><a id="user-content-lockfreestack" class="anchor" href="#lockfreestack" aria-hidden="true"></a><code>LockFreeStack</code></h3>
-<pre><code class="language-cpp">template &lt;typename T&gt;
-struct LockFreeStack {
-  void Push(const T&amp; value);
-  Node* Pop();
-
-  struct Node {
-    T data;
-    Node* next;
-  };
- private:
-  std::atomic&lt;Node*&gt; head_;
-};
+<pre><code class="language-cpp">1  template &lt;typename T&gt;
+2  struct LockFreeStack {
+4    void Push(const T&amp; value);
+5    Node* Pop();
+6
+7    struct Node {
+8      T data;
+9      Node* next;
+10   };
+11  private:
+12   std::atomic&lt;Node*&gt; head_;
+13 };
 </code></pre>
+<aside class="notes"> Объяснить пример. Если не в курсе, прочитай две статьи про LockFree в конце лекции есть ссылки на них.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-push" class="anchor" href="#push" aria-hidden="true"></a>Push</h3>
-<pre><code class="language-cpp">void Push(const T&amp; value) {
-    Node* new_head = new Node(value, head_.load());
-
-    while (
-
-
-
-      !head_.compare_exchange_weak(new_head-&gt;next, new_head)
-
-    ) { }
-  }
+<pre><code class="language-cpp">1  void Push(const T&amp; value) {
+2      Node* new_head = new Node(value, head_.load());
+3
+4      while (
+5
+6        !head_.compare_exchange_weak(new_head-&gt;next, new_head)
+7
+8      ) { }
+9  }
 </code></pre>
+<aside class="notes"> Объяснить пример. Почему в цикле, что делает compare_exchange_weak здесь, и как все это работает. Можно на доске порисовать.</aside>
 
             </section>
         
             <section >
                 <h3><a id="user-content-pop" class="anchor" href="#pop" aria-hidden="true"></a>Pop</h3>
-<pre><code class="language-cpp">Node* Pop() {
-  Node* node = head_.load();
-
-  while (node &amp;&amp;
-
-
-
-    !head_.compare_exchange_weak(node, node-&gt;next)
-
-  ) { }
-
-  return node;
-}
+<pre><code class="language-cpp">1  Node* Pop() {
+2    Node* node = head_.load();
+3
+4    while (node &amp;&amp;
+5
+6      !head_.compare_exchange_weak(node, node-&gt;next)
+7
+8    ) { }
+9
+10   return node;
+11 }
 </code></pre>
+<aside class="notes"> Объяснить пример. Почему в цикле, что делает compare_exchange_weak здесь, и как все это работает. Можно на доске порисовать.</aside>
 
             </section>
         
@@ -1036,6 +1107,7 @@ struct LockFreeStack {
 <li>lock-free программирование – не панацея и не надо бездумно применять его вместо блокирующих операций</li>
 <li>lock-free программирование – может, но не обязано, повысить производительность вашего приложения</li>
 </ul>
+<aside class="notes"> подвести итог, что lock-free это альтернатива блокировкам. Имеет свои плюсы. Есть минусы, в друдности реализации и понимании. Может не придать производительности и прочее</aside>
 
             </section>
     
