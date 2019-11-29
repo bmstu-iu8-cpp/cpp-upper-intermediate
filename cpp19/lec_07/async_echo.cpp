@@ -7,7 +7,6 @@
 
 using boost::asio::ip::tcp;
 
-/// Пример 1. Простой асинхронный Echo сервак
 void Echo(std::shared_ptr<tcp::socket> socket) {
   std::shared_ptr<std::vector<char>> data =
       std::make_shared<std::vector<char>>(1024);
