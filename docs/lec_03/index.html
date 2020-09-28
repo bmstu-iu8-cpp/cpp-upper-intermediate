@@ -1,0 +1,1517 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+
+  <title>Лекция 3 - Семантика перемещения, шаблоны проектирования</title>
+
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- REVEAL CSS-->
+  <link rel="stylesheet" href="libs/reveal.js/font-awesome-4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="libs/reveal.js/3.8.0/css/reveal.css">
+  
+  <link rel="stylesheet" href="libs/reveal.js/3.8.0/css/theme/Night.css" id="theme">
+  
+  
+  <link rel="stylesheet" href="libs/reveal.js/3.8.0/plugin/title-footer/title-footer-mod.css" />
+
+  <!-- MERMAID-->
+  <script src="libs/reveal.js/3.8.0/plugin/mermaid/mermaid.min.js"></script>
+  <style>
+  .mermaid {
+    font-size: 0.5em;
+  }
+  </style>
+
+  <style>
+    [class*=task-list-item] {
+    min-height: 22px;
+    margin-top: 6px!important;
+    margin-bottom: 6px!important;
+    padding-left: 0;
+    list-style: none;
+}
+
+[class*=task-list-item]>input:first-child {
+    position: absolute!important;
+    opacity: 0;
+    margin: 0;
+}
+[class*=task-list-item]>label {
+    padding-left: 29px!important;
+    min-height: 22px;
+    line-height: 22px;
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+    margin-bottom: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.task-list-item>input:first-child:checked+input[type=hidden]+label::before, .task-list-item>input:first-child:checked+label::before {
+    background-color: #ecf0f1;
+    border-color: #ecf0f1;
+}
+
+[class*=task-list-item]>input:first-child+input[type=hidden]+label::before, [class*=task-list-item]>input:first-child+label::before {
+    content: "";
+    display: inline-block;
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 1px solid #D3CFC8;
+    border-radius: 0;
+    margin-left: -29px;
+}
+
+
+[class*=task-list-item]>input:first-child:checked+input[type=hidden]+label::after, [class*=task-list-item]>input:first-child:checked+label::after {
+    content: "";
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 7px;
+    height: 10px;
+    border: 2px solid #fff;
+    border-left: none;
+    border-top: none;
+    transform: translate(7.75px,4.5px) rotate(45deg);
+    -ms-transform: translate(7.75px,4.5px) rotate(45deg);
+}
+
+
+.task-list-item>input:first-child:checked+input[type=hidden]+label::after, .task-list-item>input:first-child:checked+label::after {
+    border-bottom-color: #95a5a6;
+    border-right-color: #95a5a6;
+}
+  </style>
+
+  <!-- Theme used for syntax highlighting of code -->
+  
+  <link rel="stylesheet" href="libs/highlight.js/9.12.0/darkula.css">
+  
+
+  
+  
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match(/print-pdf/gi) ? 'libs/reveal.js/3.8.0/css/print/pdf.css' : 'libs/reveal.js/3.8.0/css/print/paper.css';
+    document.getElementsByTagName('head')[0].appendChild(link);
+  </script>
+
+  <style>
+    /* Solarized Light theme */
+     .line {
+      display: block;
+    }
+    
+
+    .line.focus {
+      background: #fdf6e3;
+      color: #657b83;
+    }
+
+/*
+    .line.focus .hljs-comment,
+    .line.focus .hljs-quote {
+      color: #93a1a1;
+    }
+
+    .line.focus .hljs-keyword,
+    .line.focus .hljs-selector-tag,
+    .line.focus .hljs-addition {
+      color: #859900;
+    }
+
+    .line.focus .hljs-number,
+    .line.focus .hljs-string,
+    .line.focus .hljs-meta .hljs-meta-string,
+    .line.focus .hljs-literal,
+    .line.focus .hljs-doctag,
+    .line.focus .hljs-regexp {
+      color: #2aa198;
+    }
+
+    .line.focus .hljs-title,
+    .line.focus .hljs-section,
+    .line.focus .hljs-name,
+    .line.focus .hljs-selector-id,
+    .line.focus .hljs-selector-class {
+      color: #268bd2;
+    }
+
+    .line.focus .hljs-attribute,
+    .line.focus .hljs-attr,
+    .line.focus .hljs-variable,
+    .line.focus .hljs-template-variable,
+    .line.focus .hljs-class .hljs-title,
+    .line.focus .hljs-type {
+      color: #b58900;
+    }
+
+    .line.focus .hljs-symbol,
+    .line.focus .hljs-bullet,
+    .line.focus .hljs-subst,
+    .line.focus .hljs-meta,
+    .line.focus .hljs-meta .hljs-keyword,
+    .line.focus .hljs-selector-attr,
+    .line.focus .hljs-selector-pseudo,
+    .line.focus .hljs-link {
+      color: #cb4b16;
+    }
+
+    .line.focus .hljs-built_in,
+    .line.focus .hljs-deletion {
+      color: #dc322f;
+    }
+
+    .line.focus .hljs-formula {
+      background: #eee8d5;
+    }
+
+    .line.focus .hljs-emphasis {
+      font-style: italic;
+    }
+
+    .line.focus .hljs-strong {
+      font-weight: bold;
+    }
+
+    .yellow-slide .line.focus:nth-child(2) {
+      background: yellow;
+    }
+
+    .reveal .slides section .code-presenting-annotation {
+      font-size: 70%;
+    }
+    */
+
+    .reveal .slides section .fragment.current-only {
+      visibility: visible;
+      display: none;
+    }
+
+    .reveal .slides section .fragment.current-only.current-fragment {
+      display: block;
+    }
+
+/*
+    .line {
+      display: block;
+    }
+*/
+    .line.focus {
+       opacity: 1.0;
+    } 
+
+    /* .hljs {
+      background: none;
+    } */
+
+    /* .reveal pre {
+      width: 98%;
+      margin: 0px;
+      box-shadow: none;
+    }
+
+    .reveal pre code {
+      font-size: 1.2em;
+      line-height: 1.2;
+      border-radius: 10px;
+      max-height: 60vh !important;
+      overflow: hidden !important;
+    } */
+
+    @media (device-width: 100vw) and (device-height: 100vh) {
+      .reveal pre code {
+        max-height: 50vh !important;
+      }
+    }
+
+    #logo img {
+      max-height: 3.5em;
+      max-width: none;
+      min-width: 50px;
+    }
+
+    .reveal .slides section .code-presenting-annotation {
+      color: white;
+      background: black;
+      padding: 0px 15px;
+      border-radius: 15px;
+      opacity: 0.75 !important;
+      font-size: 50% !important;
+    }
+  </style>
+  <script>
+    if (window.location.search.match(/print-pdf-now/gi)) {
+      window.print();
+    }
+  </script>
+</head>
+
+<body>
+  
+
+  <div class="reveal">
+
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+
+      
+
+
+    
+        <section >
+            
+            <h1><a id="user-content-лекция-3" class="anchor" href="#лекция-3" aria-hidden="true"></a>Лекция 3</h1>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-содержание" class="anchor" href="#содержание" aria-hidden="true"></a>Содержание</h3>
+<ul>
+<li>move-семантика</li>
+<li>шаблоны проектирования</li>
+<li><s>STL алгоритмы</s></li>
+<li><s>“современный” С++</s></li>
+</ul>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h2><a id="user-content-семантика-перемещения" class="anchor" href="#семантика-перемещения" aria-hidden="true"></a>Семантика перемещения</h2>
+
+            </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-sharedptr" class="anchor" href="#sharedptr" aria-hidden="true"></a>SharedPtr</h3>
+<ul>
+<li><strong>перемещаемый</strong> и <strong>копируемый</strong> указатель</li>
+<li>используется для управления ресурсами путем <strong>совместноrо</strong> владения</li>
+<li>работает на основе подсчета ссылок на объект</li>
+<li>счетчик ссылок – атомарный</li>
+<li>имеет два счетчик ссылок: счетчик “сильных” ссылок, счетчик “слабых” ссылок</li>
+<li>блок управления находится в динамической памяти</li>
+</ul>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-sharedptr-1" class="anchor" href="#sharedptr-1" aria-hidden="true"></a>SharedPtr</h3>
+<img src="./res/shared.png" width=100%/>
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-uniqueptr" class="anchor" href="#uniqueptr" aria-hidden="true"></a>UniquePtr</h3>
+<ul>
+<li><strong>перемещаемый</strong> и <strong>НЕ копируемый</strong> указатель</li>
+<li>единалично владеет объектом</li>
+<li>минимум дополнительных затрат</li>
+<li>совместим с STL-контейнерами</li>
+<li>поддерживает custom deleter</li>
+</ul>
+
+            </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-проблема" class="anchor" href="#проблема" aria-hidden="true"></a>Проблема</h3>
+<pre><code class="language-cpp">String GetData(tcp::socket socket);
+void Modify(String&amp; str);
+std::vector&lt;String&gt; storage;
+</code></pre>
+<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
+  auto data = GetData(socket);
+  Modify(data);
+  storage[i] = data; // Копирование строки.
+} // &lt;-- Вызывается деструктор |data|.
+</code></pre>
+
+            </section>
+        
+            <section >
+                <img src="./res/go-deeper.jpg" width=100%/>
+            </section>
+        
+            <section >
+                <h3><a id="user-content-копирование-строк" class="anchor" href="#копирование-строк" aria-hidden="true"></a>Копирование строк</h3>
+<pre><code class="language-cpp">// string.h
+class String {
+  char* data_;
+ public:
+  String(const String&amp; oth);
+  String&amp; operator=(const String&amp; oth);
+};
+</code></pre>
+<pre><code class="language-cpp">// string.cpp
+String::String(const String&amp; oth) {
+  data_ = new char[oth.size() + 1];
+  memcpy(data_, oth.data_, oth.size() + 1); // (1)
+}
+
+String&amp; String::operator=(const String&amp; oth) {
+  if (this != &amp;oth) {
+    delete[] data_; // (2)
+    data_ = new char[oth.size() + 1];
+    memcpy(data_, oth.data_, oth.size() + 1); // (3)
+  }
+  return *this;
+}
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-идея-" class="anchor" href="#идея-" aria-hidden="true"></a>Идея 💡</h3>
+<pre><code class="language-cpp">String::move_from(String&amp; b) {
+  char* tmp = this-&gt;data_;
+  this-&gt;data_ = b.data_;
+  b.data_ = tmp;
+}
+</code></pre>
+<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
+  auto data = GetData(socket);
+  Modify(data);
+  storage[i].move_from(data); // Избавляемся от копирования.
+} // &lt;-- Вызывается деструктор пустой |data|,
+  // потому что storage[i] был пустым
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-move-семантина-с03" class="anchor" href="#move-семантина-с03" aria-hidden="true"></a>Move-семантина С++03</h3>
+<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
+  auto data = GetData(socket);
+  Modify(data);
+  storage[i].swap(data); // Избавляемся от копирования.
+} // &lt;-- Вызывается деструктор пустой |data|,
+  // потому что storage[i] был пустым
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-swap-как-move-семантика" class="anchor" href="#swap-как-move-семантика" aria-hidden="true"></a><code>swap</code> как move-семантика</h3>
+<p>Использование <code>swap</code> помогает повысить производительность приложения.</p>
+<p>Однако, использовать <code>swap</code> для перемещения данных неудобно, а иногда и неприменимо.</p>
+<p>Во-вторых, это усложняет и запутывает код.</p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-move-семантина-с11" class="anchor" href="#move-семантина-с11" aria-hidden="true"></a>Move-семантина С++11</h3>
+<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
+  auto data = GetData(socket);
+  Modify(data);
+  storage[i] = std::move(data); // Избавляемся от копирования.
+} // &lt;-- Вызывается деструктор пустой |data|,
+  // потому что storage[i] был пустым
+</code></pre>
+
+            </section>
+        
+            <section >
+                <img src="./res/go-deeper.jpg" width=100%/>
+            </section>
+        
+            <section >
+                <h3><a id="user-content-перемещение-строк" class="anchor" href="#перемещение-строк" aria-hidden="true"></a>Перемещение строк</h3>
+<pre><code class="language-cpp">// string.h
+class String {
+  char* data_;
+ public:
+  // Обратите внимание на noexcept!
+  String(String&amp;&amp; oth) noexcept;
+  String&amp; operator=(String&amp;&amp; oth) noexcept;
+};
+</code></pre>
+<pre><code class="language-cpp">// string.cpp
+String::String(String&amp;&amp; oth) noexcept {
+  data_ = oth.data_;
+  oth.data_ = nullptr;
+}
+
+String&amp; String::operator=(String&amp;&amp; oth) noexcept {
+  if (this != &amp;oth) {
+    delete[] data_;
+    data_ = oth.data_;
+    oth.data_ = nullptr;
+  }
+  return *this;
+}
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-rvalue" class="anchor" href="#rvalue" aria-hidden="true"></a>rvalue</h3>
+<p>Rvalue ссылки – техническое расширение языка C++. Они позволяют компилятору определить, когда необходимо использовать перемещение, вместо копирования.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-перегрузка-функций" class="anchor" href="#перегрузка-функций" aria-hidden="true"></a>Перегрузка функций</h3>
+<pre><code class="language-cpp">// Копирование.
+String(const String&amp; oth) noexcept;
+String&amp; operator=(const String&amp; oth) noexcept;
+
+// Перемещение.
+String(String&amp;&amp; oth) noexcept;
+String&amp; operator=(String&amp;&amp; oth) noexcept;
+</code></pre>
+<p>Благодаря rvalue, компиятор определяет какую из перегрузок функций необходимо выбрать.</p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-stdmove" class="anchor" href="#stdmove" aria-hidden="true"></a><code>std::move()</code></h3>
+<p><code>std::move</code> безусловно приводит аргумент к <code>rvalue</code> ссылке.</p>
+<pre><code class="language-cpp">template&lt;typename T&gt;
+decltype(auto) move(T&amp;&amp; arg) {
+  using ReturnType = remove_reference_t&lt;T&gt;&amp;&amp;;
+  return static_cast&lt;ReturnType&gt;(arg);
+}
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-stdmove-1" class="anchor" href="#stdmove-1" aria-hidden="true"></a><code>std::move()</code></h3>
+<p>С помощью функции <code>std::move</code> разработчик “подсказавает” компилятору, что необходимо использовать перемещение объекта.</p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-рекомендации" class="anchor" href="#рекомендации" aria-hidden="true"></a>Рекомендации</h3>
+<ul>
+<li>Не используйте объект после того, как его переместили в другой!</li>
+</ul>
+<pre><code class="language-cpp">Object obj;
+// ...
+Object another = std::move(obj);
+obj.SomeMethod();
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-рекомендации-1" class="anchor" href="#рекомендации-1" aria-hidden="true"></a>Рекомендации</h3>
+<ul>
+<li>Не объявляйте объекты константными, если хотите иметь возможность их перемещать</li>
+</ul>
+<pre><code class="language-cpp">void foo(const Object&amp; obj) {
+  // ...
+  Object another = std::move(obj); // ooops!
+  // ...
+}
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-рекомендации-2" class="anchor" href="#рекомендации-2" aria-hidden="true"></a>Рекомендации</h3>
+<ul>
+<li><code>std::move</code> не гарантирует, что приведенный объект будет иметь право быть перемещенным</li>
+</ul>
+<pre><code class="language-cpp">std::array&lt;int, 10&gt; arr = {1, 2, 3};
+// ...
+std::array&lt;int, 10&gt; yet_arr = std::move(arr);
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-резюме" class="anchor" href="#резюме" aria-hidden="true"></a>Резюме</h3>
+<ul>
+<li>Семантика перемещения позволяет компиляторам заменять дорогостоящие операции копирования “дешевыми” перемещениями.</li>
+<li>Конструктор перемещения и оператор перемещения предоставляют контроль над семантикой перемещения.</li>
+</ul>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-резюме-1" class="anchor" href="#резюме-1" aria-hidden="true"></a>Резюме</h3>
+<ul>
+<li>Семантика перемещения позволяет также создавать типы, которые концептуально поддерживают только операции перемещения. К таким типам относятся как <code>std::unique_ptr</code>, <code>std::future</code>, <code>std::thread</code> и др.</li>
+<li>Это помогает передавать такие объекты в функции, возвращать их из функций, хранить в коллекциях и пр.</li>
+</ul>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-move-only" class="anchor" href="#move-only" aria-hidden="true"></a>Move only</h3>
+<pre><code class="language-cpp">unique_ptr(const unique_ptr&lt;T&gt;&amp;) = delete;
+unique_ptr&amp; operator=(const unique_ptr&lt;T&gt;&amp;) = delete;
+
+unique_ptr(unique_ptr&lt;T&gt;&amp;&amp;) noexcept {
+  // ...
+}
+unique_ptr&amp; operator=(unique_ptr&lt;T&gt;&amp;&amp;) noexcept {
+  // ...
+}
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h2><a id="user-content-шаблоны-проектирования" class="anchor" href="#шаблоны-проектирования" aria-hidden="true"></a>Шаблоны проектирования</h2>
+
+            </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-что-это" class="anchor" href="#что-это" aria-hidden="true"></a>Что это</h3>
+<p>Шаблон проектирования – повторяемая архитектурная конструкция, представляющая собой решение проблемы проектирования в рамках некоторого часто возникающего контекста.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-зачем-нужны-шаблоны" class="anchor" href="#зачем-нужны-шаблоны" aria-hidden="true"></a>Зачем нужны шаблоны</h3>
+<ul>
+<li>предоставляют готовое решение некоторой известной проблемы</li>
+<li>позволяют поддерживать архитектуру приложения в лучшем состоянии, нежели без использования шаблонов</li>
+<li>помогают разговаривать разраотчикам на одном языке</li>
+<li>полезны при рефакторинге кода</li>
+</ul>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-неоправданное-применение" class="anchor" href="#неоправданное-применение" aria-hidden="true"></a>Неоправданное применение</h3>
+<p>Самая большая ошибка при работе с шаблонами проектирования – это неоправданное их использование.</p>
+<p><em>“Если у тебя в руках молоток, то все предметы вокруг начинают напоминать гвозди.”</em></p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-простая-фабрика" class="anchor" href="#простая-фабрика" aria-hidden="true"></a>Простая фабрика</h3>
+<p>В С++ существует механизм полиморфизма на базе виртуальных функций.</p>
+<p>Полиморфизм позволяет вызывать функции производным классов, ничего не зная о них, а только оперировать базовым классом.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-полиморфизм" class="anchor" href="#полиморфизм" aria-hidden="true"></a>Полиморфизм</h3>
+<pre><code class="language-cpp">struct Unit {
+  void Attack(Unit&amp; target);
+}
+
+struct Knight : public Unit {
+  // ...
+};
+
+struct Archer : public Unit {
+  // ...
+};
+
+Unit* unit = new Knight();
+Unit* target = new Archer();
+unit-&gt;Attack(*target);
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-виртуальный-конструктор" class="anchor" href="#виртуальный-конструктор" aria-hidden="true"></a>Виртуальный конструктор</h3>
+<!-- https://refactoring.guru/ru/design-patterns/factory-comparison -->
+<!-- http://cpp-reference.ru/articles/virtual-constructor/ -->
+<p>Однако, чтобы создать объект дочернего класса необходимо явно указать в коде, объект какого класса создается.</p>
+<p>Решить данную проблему призван шаблон проектирования “простая фабрика”</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простая-фабрика-1" class="anchor" href="#простая-фабрика-1" aria-hidden="true"></a>Простая фабрика</h3>
+<p>Паттерн “простая фабрика” – это класс, в котором есть один метод с большим условным оператором, выбирающим создаваемый продукт.</p>
+<p>Этот метод вызывают с неким параметром, по которому определяется какой из продуктов нужно создать.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-реализация" class="anchor" href="#реализация" aria-hidden="true"></a>Реализация</h3>
+<pre><code class="language-cpp">struct Barrack {
+  Unit* CreateUnit(UnitID unit_id) {
+
+    switch (unit_id) {
+      case UnitID::Knight:
+        return new Knight();
+      case UnitID::Archer:
+        return new Archer();
+      default:
+        return nullptr;
+    }
+
+  }
+};
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-фабричный-метод" class="anchor" href="#фабричный-метод" aria-hidden="true"></a>Фабричный метод</h3>
+<p>Паттерн “фабричный метод” – это устройство классов, при котором подклассы могут переопределять тип создаваемого в суперклассе продукта.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-пример" class="anchor" href="#пример" aria-hidden="true"></a>Пример</h3>
+<pre><code class="language-cpp">struct Barrack {
+  virtual Unit* CreateUnit() = 0;
+
+  void Hire(Player&amp; player) {
+    auto* unit = CreateUnit();
+    player.AddToArmy(unit);
+  }
+};
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-пример-продолжение" class="anchor" href="#пример-продолжение" aria-hidden="true"></a>Пример (продолжение)</h3>
+<pre><code class="language-cpp">struct KnightBarrack : public Barrack {
+  Unit* CreateUnit() override {
+    return new Knight();
+  }
+};
+struct ArcherBarrack : public Barrack {
+  Unit* CreateUnit() override {
+    return new Archer();
+  }
+};
+
+ArcherBarrack archer_barrack;
+archer_barrack.Hire(player);
+KnightBarrack knight_barrack;
+knight_barrack.Hire(player);
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-singleton" class="anchor" href="#singleton" aria-hidden="true"></a>Singleton</h3>
+<p>Singleton – порождающий шаблон проектирования, гарантирующий, что в приложении будет <strong>единственный</strong> экземпляр некоторого класса, и предоставляющий глобальную точку доступа к этому экземпляру.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-назначение-паттерна" class="anchor" href="#назначение-паттерна" aria-hidden="true"></a>Назначение паттерна</h3>
+<p>Некоторые подсистемы в приложении должны существовать только в единственном экземпляре.</p>
+<p>Например, система логгирования или драйвер дисплея.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-цели-паттерна" class="anchor" href="#цели-паттерна" aria-hidden="true"></a>Цели паттерна</h3>
+<ol>
+<li>
+<p>Гарантирует наличие единственного экземпляра класса</p>
+</li>
+<li>
+<p>Предоставляет глобальную точку доступа</p>
+</li>
+</ol>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-проблемы-паттерна" class="anchor" href="#проблемы-паттерна" aria-hidden="true"></a>Проблемы паттерна</h3>
+<p>С данным паттером традиционно связаны несколько проблем:</p>
+<ul>
+<li>доступ и создание объекта в многопоточной среде</li>
+<li>время создания и разрушения объекта singleton’a</li>
+<li>взаимное использование двух синглтонов</li>
+</ul>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-классическая-реализация-singleton" class="anchor" href="#классическая-реализация-singleton" aria-hidden="true"></a>Классическая реализация Singleton</h3>
+<pre><code class="language-cpp">// Singleton.h
+class Singleton {
+  static Singleton* instance;
+  Singleton() {}
+  Singleton(const Singleton&amp;) = delete;
+  Singleton&amp; operator=(Singleton&amp;) = delete;
+public:
+
+  static Singleton * getInstance() {
+    if (!instance) {
+      instance = new Singleton();
+    }
+    return instance;
+  }
+};
+</code></pre>
+<pre><code class="language-cpp">// Singleton.cpp
+#include &quot;Singleton.h&quot;
+
+Singleton* Singleton::instance = nullptr;
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-реализация-синглтон-мэйерса" class="anchor" href="#реализация-синглтон-мэйерса" aria-hidden="true"></a>Реализация. Синглтон Мэйерса</h3>
+<pre><code class="language-cpp">// Singleton.h
+class Singleton {
+private:
+  Singleton() {}
+  Singleton(const Singleton&amp;) = delete;
+  Singleton&amp; operator=(Singleton&amp;) = delete;
+public:
+  static Singleton&amp; getInstance() {
+    static Singleton instance;
+    return instance;
+  }
+};
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-observer" class="anchor" href="#observer" aria-hidden="true"></a>Observer</h3>
+<p>Наблюдатель – это поведенческий паттерн проектирования, который создаёт механизм подписки, позволяющий одним объектам следить и реагировать на события, происходящие в других объектах.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-интерфейс-publisher" class="anchor" href="#интерфейс-publisher" aria-hidden="true"></a>Интерфейс Publisher</h3>
+<pre><code class="language-cpp">struct Publisher {
+  struct Observer {
+    virtual void OnUpdate() = 0;
+  };
+  void AddObserver(const Observer&amp; observer);
+  void RemoveObserver(const Observer&amp; observer);
+  void DoSomething();
+ private:
+  void Notify();
+  std::vector&lt;Observer*&gt; observers_;
+};
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-реализация-publisher" class="anchor" href="#реализация-publisher" aria-hidden="true"></a>Реализация Publisher</h3>
+<pre><code class="language-cpp">void Publisher::AddObserver(const Observer&amp; observer) {
+  observers_.push_back(&amp;observer);
+}
+
+void Publisher::RemoveObserver(const Observer&amp; observer) {
+  auto it = std::remove(
+      observers_.begin(), observers_.end(), &amp;observer);
+  observers_.erase(it, observers_.end());
+}
+</code></pre>
+<pre><code class="language-cpp">void Publisher::Notify() {
+  for (auto* observer : observers_) {
+    observer-&gt;OnUpdate();
+  }
+}
+
+void Publisher::DoSomething() {
+  // Выполнение некоторых действий.
+  // Решаем, что необходимо умедомить наблюдателей о событии.
+  Notify();
+  // Продолжчаем выполнение функции.
+}
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-использование-observer" class="anchor" href="#использование-observer" aria-hidden="true"></a>Использование Observer</h3>
+<pre><code class="language-cpp">struct SubscriberOne : public Publisher::Observer {
+  void OnUpdate() {
+    // Реагирование на уведомление от Publisher'a
+  }
+};
+struct SubscriberTwo : public Publisher::Observer {
+  void OnUpdate() {
+    // Реагирование на уведомление от Publisher'a
+  }
+};
+</code></pre>
+<pre><code class="language-cpp">Publisher publisher;
+SubscriberOne subscriber1;
+SubscriberTwo subscriber2;
+publisher.AddObserver(subscriber1);
+publisher.AddObserver(subscriber2);
+publisher.DoSomething();
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-пример-1" class="anchor" href="#пример-1" aria-hidden="true"></a>Пример</h3>
+<pre><code class="language-cpp">struct WebContentObserver {
+  virtual void OnConnection(tcp::address) {}
+  virtual void OnDataReceived(const std::vector&lt;byte&gt;&amp;) {}
+  virtual void OnParsed(const Html&amp;) {}
+  virtual void OnJavaScriptExecute(const JSCode&amp;) {}
+  virtual void OnLoaded(const WebPage&amp;) {}
+};
+</code></pre>
+<pre><code class="language-cpp">struct WebContent {
+  void LoadUrl(base::Url&amp; url) {
+    // ...
+    NotifyConnectionEstablished(addr);
+    // ...
+    NotifyDataReceived(data);
+    // ...
+    NotifyPageParsed(htmlPage);
+    // ...
+    NotifyJSExecuted(js);
+    // ...
+    NotifyPageLoaded(page);
+  }
+};
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-stl" class="anchor" href="#stl" aria-hidden="true"></a>STL</h3>
+<p><em>STL – набор <strong>согласованных</strong> обобщённых алгоритмов, контейнеров, средств доступа к их содержимому и различных вспомогательных функций в C++</em></p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-алгоритмы-stl" class="anchor" href="#алгоритмы-stl" aria-hidden="true"></a>Алгоритмы STL</h3>
+<p>Алгоритмы STL реализованы в виде глобальных функций, которые работают с использованием итераторов.</p>
+<p>Это означает, что реализованный алгоритм будет работать со всеми контейнерами, которые предоставляют набор итераторов.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-некоторые-из-алгоритмов" class="anchor" href="#некоторые-из-алгоритмов" aria-hidden="true"></a>Некоторые из алгоритмов</h3>
+<table>
+<thead>
+<tr>
+<th>Алгоритм</th>
+<th style="text-align:left">Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>count_if</code></td>
+<td style="text-align:left">подсчет элементов</td>
+</tr>
+<tr>
+<td><code>find_if</code></td>
+<td style="text-align:left">нахождение элемента</td>
+</tr>
+<tr>
+<td><code>transform</code></td>
+<td style="text-align:left">преобразование диапазона</td>
+</tr>
+<tr>
+<td><code>all_of</code></td>
+<td style="text-align:left">все элементы удовлетворяют условию</td>
+</tr>
+<tr>
+<td><code>remove_if</code></td>
+<td style="text-align:left">удаление из диапазона</td>
+</tr>
+<tr>
+<td><code>replace_if</code></td>
+<td style="text-align:left">замена элементов</td>
+</tr>
+<tr>
+<td><code>merge</code></td>
+<td style="text-align:left">слияние сортированных диапазонов</td>
+</tr>
+<tr>
+<td><code>is_sorted</code></td>
+<td style="text-align:left">сортирован ли диапазон</td>
+</tr>
+<tr>
+<td><code>lower_bound</code></td>
+<td style="text-align:left">возвращает позицию на элемент, который <strong>не меньше</strong> чем аргумент</td>
+</tr>
+</tbody>
+</table>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-разбор-аргументов" class="anchor" href="#разбор-аргументов" aria-hidden="true"></a>Разбор аргументов</h3>
+<pre><code class="language-cpp">auto it = std::find_if(
+  v.begin(), // начало диапозона.
+  v.end(), // конец диапозона.
+  [](const auto&amp; el) { // предикат.
+    return el.size() &gt; 5;
+  }
+)
+</code></pre>
+<p>Сначала задается диапазон <code>[first, last)</code>, элемент <code>last</code> не включается в диапазон. Далее идет предикат применяющийся к диапазону.</p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-современный-с" class="anchor" href="#современный-с" aria-hidden="true"></a>Современный С++</h3>
+
+            </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-stdoptional" class="anchor" href="#stdoptional" aria-hidden="true"></a><code>std::optional</code></h3>
+<p>Класс <code>std::optional</code> управляет опциональным значением, т. е. значением, которое может присутствовать или отсутствовать.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-пример-2" class="anchor" href="#пример-2" aria-hidden="true"></a>Пример</h3>
+<pre><code class="language-cpp">std::optional&lt;int&gt; TryParseNumber(const std::string&amp; str);
+</code></pre>
+<pre><code class="language-cpp">auto num = TryParseNumber(&quot;123&quot;);
+if (num) {
+  std::cout &lt;&lt; num.value(); // или *num;
+}
+std::cout &lt;&lt; num.value_or(0);
+</code></pre>
+<pre><code class="language-cpp">auto num = TryParseNumber(&quot;Not number&quot;);
+if (num) {
+  std::cout &lt;&lt; num.value(); // или *num;
+}
+std::cout &lt;&lt; num.value_or(0);
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-stdany" class="anchor" href="#stdany" aria-hidden="true"></a><code>std::any</code></h3>
+<p>Класс <code>std::any</code> – типобезопасносный контейнер для одиночного значения любого типа.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-пример-3" class="anchor" href="#пример-3" aria-hidden="true"></a>Пример</h3>
+<pre><code class="language-cpp">std::any value;
+
+value = 1;
+value = std::string(&quot;Something&quot;);
+value = Student{&quot;Ivanov&quot;, &quot;BMSTU&quot;, 2019};
+std::string name = std::any_cast&lt;Student&gt;(value).Name;
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-stdtuple" class="anchor" href="#stdtuple" aria-hidden="true"></a><code>std::tuple</code></h3>
+<p>Класс <code>std::tuple</code> представляет собой набор фиксированного размера различный типов.</p>
+<pre><code class="language-cpp">std::tuple&lt;std::string, std::string, int, float&gt; value;
+value = std::make_tuple(&quot;ABC&quot;, &quot;qwerty&quot;, 1, 4.3);
+
+std::string first;
+std::string second;
+int third = 0;
+float fourth = 0;
+std::tie(first, second, third, fourth) = value;
+
+std::cout &lt;&lt; first &lt;&lt; second &lt;&lt; third &lt;&lt; fourth;
+</code></pre>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-stdvariant" class="anchor" href="#stdvariant" aria-hidden="true"></a><code>std::variant</code></h3>
+<p>Класс <code>std::variant</code> представляет собой типобезопасное объединение (union).</p>
+<pre><code class="language-cpp">std::variant&lt;int, float&gt; v;
+v = 12
+int a = std::get&lt;int&gt;(v);
+int b = std::get&lt;0&gt;(v);
+
+try {
+  std::get&lt;float&gt;(v);
+}
+catch (const std::bad_variant_access&amp;) {}
+</code></pre>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-структурное-связывание" class="anchor" href="#структурное-связывание" aria-hidden="true"></a>Структурное связывание</h3>
+<h5><a id="user-content-до" class="anchor" href="#до" aria-hidden="true"></a>До</h5>
+<pre><code class="language-cpp">std::map&lt;std::string, int&gt; students = GetGtoupById(31);
+
+for (const auto&amp; e : students) {
+  std::cout &lt;&lt; e.first &lt;&lt; &quot; has mark = &quot; &lt;&lt; e.second;
+}
+</code></pre>
+<h5><a id="user-content-после" class="anchor" href="#после" aria-hidden="true"></a>После</h5>
+<pre><code class="language-cpp">std::map&lt;std::string, int&gt; students = GetGtoupById(31);
+
+for (const auto&amp; [name, mark] : students) {
+  std::cout &lt;&lt; name &lt;&lt; &quot; has mark = &quot; &lt;&lt; mark;
+}
+</code></pre>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-домашнее-задание" class="anchor" href="#домашнее-задание" aria-hidden="true"></a>Домашнее задание</h3>
+<ul>
+<li>прямая передача (perfect forward)</li>
+<li>constexpr</li>
+<li>constexpr if</li>
+<li>noexcept</li>
+</ul>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-литература" class="anchor" href="#литература" aria-hidden="true"></a>Литература</h3>
+<ul>
+<li><a href="https://habr.com/en/post/164221/">https://habr.com/en/post/164221/</a></li>
+<li><a href="https://refactoring.guru/">https://refactoring.guru/</a></li>
+</ul>
+
+            </section>
+    
+
+
+    </div>
+
+
+  </div>
+
+  <script src="libs/reveal.js/3.8.0/lib/js/head.min.js"></script>
+  <script src="libs/reveal.js/3.8.0/js/reveal.js"></script>
+
+  <script>
+
+    // More info https://github.com/hakimel/reveal.js#configuration
+    Reveal.initialize({
+
+        controls: true,
+        controlsTutorial: true,
+        controlsLayout: 'bottom-right',
+        controlsBackArrows: 'faded',
+        progress: true,
+        slideNumber: true,
+        history: true,
+        keyboard: true,
+        overview: true,
+        center: true,
+        touch: true,
+        loop: false,
+        rtl: false,
+        shuffle: false,
+        fragments: true,
+        fragmentInURL: false,
+        embedded: false,
+        help: true,
+        showNotes: false,
+        autoPlayMedia: false,
+        autoSlide: 0,
+        autoSlideStoppable: true,
+        autoSlideMethod: Reveal.navigateNext,
+        defaultTiming: 120,
+        mouseWheel: false,
+        hideAddressBar: true,
+        previewLinks: false,
+        transition: 'slide',
+        transitionSpeed: 'default',
+        backgroundTransition: 'default',
+        viewDistance: 3,
+        parallaxBackgroundImage: '',
+        parallaxBackgroundSize: '',
+        parallaxBackgroundHorizontal: 0,
+        parallaxBackgroundVertical: 0,
+        display: 'block',
+
+        // More info https://github.com/hakimel/reveal.js#dependencies
+        dependencies: [
+            // { src: 'libs/reveal.js/3.8.0/lib/js/classList.js', condition: function () { return !document.body.classList; } },
+            // { src: 'libs/reveal.js/3.8.0/plugin/markdown/marked.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+            // { src: 'libs/reveal.js/3.8.0/plugin/markdown/markdown.js', condition: function () { return !!document.querySelector('[data-markdown]'); } },
+            // { src: 'libs/reveal.js/3.8.0/plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } },
+            { src: 'libs/reveal.js/3.8.0/plugin/notes/notes.js', async: true },
+            { src: 'libs/reveal.js/3.8.0/plugin/chart/Chart.min.js' },
+            { src: 'libs/reveal.js/3.8.0/plugin/chart/csv2chart.js' },
+            { src: 'libs/reveal.js/3.8.0/plugin/embed-tweet/embed-tweet.js' },
+            { src: 'libs/reveal.js/3.8.0/plugin/math/math.js', async: true },
+            { src: 'libs/highlight.js/9.12.0/highlight.js', async: true },
+            { src: 'libs/reveal.js/3.8.0/plugin/anything/anything.js' },
+            { src: 'libs/reveal.js/3.8.0/plugin/mermaid/mermaid.min.js', async: true, callback: function() {mermaid.initialize({startOnLoad:false})} },	
+
+           
+        { src: 'libs/reveal.js/3.8.0/plugin/search/search.js', async: true },
+           
+
+           
+        { src: 'libs/reveal.js/3.8.0/plugin/zoom-js/zoom.js', async: true },
+            
+
+            
+        { src: 'libs/reveal.js/3.8.0/plugin/chalkboard/chalkboard.js' },
+            
+
+            
+        { src: 'libs/reveal.js/3.8.0/plugin/menu/menu.js' },
+            
+
+            
+        { src: 'libs/reveal.js/3.8.0/plugin/title-footer/title-footer.js', async: true, callback: function () { title_footer.initialize(); } },
+            
+
+        {
+            src: 'libs/highlight.js/9.12.0/reveal-code-focus-1.0.0-mod.js',
+            async: true,
+            callback: function () {
+                RevealCodeFocus();
+            }
+        },
+            // { src: 'libs/reveal.js/3.8.0/plugin/reveal-code-focus/highlight.pack.js' },
+            // { src: 'libs/reveal.js/3.8.0/plugin/reveal-code-focus/reveal-code-focus.js', async: true, callback: function() { RevealCodeFocus(); } },
+           // {src: 'libs/reveal.js/3.8.0/plugin/line-numbers/line-numbers.js'}
+        ]
+        ,
+    keyboard: {
+        67: function () { RevealChalkboard.toggleNotesCanvas() },	// toggle notes canvas when 'c' is pressed
+        66: function () { RevealChalkboard.toggleChalkboard() },	// toggle chalkboard when 'b' is pressed
+        46: function () { RevealChalkboard.clear() },	// clear chalkboard when 'DEL' is pressed
+        8: function () { RevealChalkboard.reset() },	// reset chalkboard data on current slide when 'BACKSPACE' is pressed
+        68: function () { RevealChalkboard.download() },	// downlad recorded chalkboard drawing when 'd' is pressed
+    },
+    math: {
+       // mathjax: 'libs/reveal.js/3.8.0/plugin/math/MathJax.js',
+             mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+            config: 'TeX-AMS_HTML-full'
+    },
+    chart: {
+        defaults: {
+            global: {
+                title: { fontColor: "#FFF" },
+                legend: {
+                    position: "bottom",
+                        labels: { fontColor: "#FFF" },
+                },
+                tooltips: {
+                    labels: { fontColor: "#FFF" },
+                },
+            },
+            scale: {
+                scaleLabel: { fontColor: "#FFF" },
+                gridLines: { color: "#FFF", zeroLineColor: "#FFF" },
+                ticks: { fontColor: "#FFF" },
+            }
+        },
+        line: { borderColor: ["rgba(20,220,220,.8)", "rgba(220,120,120,.8)", "rgba(20,120,220,.8)"], "borderDash": [[5, 10], [0, 0]] },
+        bar: { backgroundColor: ["rgba(20,220,220,.8)", "rgba(220,120,120,.8)", "rgba(20,120,220,.8)"] },
+        pie: { backgroundColor: [["rgba(0,0,0,.8)", "rgba(220,20,20,.8)", "rgba(20,220,20,.8)", "rgba(220,220,20,.8)", "rgba(20,20,220,.8)"]] },
+        radar: { borderColor: ["rgba(20,220,220,.8)", "rgba(220,120,120,.8)", "rgba(20,120,220,.8)"] },
+    },
+    anything: [ 
+	 {
+	  className: "mermaid"
+	 },
+	 // ...
+	],
+    menu: {
+        // Specifies which side of the presentation the menu will 
+        // be shown. Use 'left' or 'right'.
+        side: 'left',
+
+            // Specifies the width of the menu.
+            // Can be one of the following:
+            // 'normal', 'wide', 'third', 'half', 'full', or
+            // any valid css length value
+            width: 'normal',
+
+                // Add slide numbers to the titles in the slide list.
+                // Use 'true' or format string (same as reveal.js slide numbers)
+                numbers: false,
+
+                    // Specifies which slide elements will be used for generating
+                    // the slide titles in the menu. The default selects the first
+                    // heading element found in the slide, but you can specify any
+                    // valid css selector and the text from the first matching
+                    // element will be used.
+                    // Note: that a section data-menu-title attribute or an element
+                    // with a menu-title class will take precedence over this option
+                    titleSelector: 'h1, h2, h3, h4, h5, h6',
+
+                        // If slides do not have a matching title, attempt to use the
+                        // start of the text content as the title instead
+                        useTextContentForMissingTitles: false,
+
+                            // Hide slides from the menu that do not have a title.
+                            // Set to 'true' to only list slides with titles.
+                            hideMissingTitles: false,
+
+                                // Adds markers to the slide titles to indicate the 
+                                // progress through the presentation. Set to 'false'
+                                // to hide the markers.
+                                markers: true,
+
+                                    // Specify custom panels to be included in the menu, by
+                                    // providing an array of objects with 'title', 'icon'
+                                    // properties, and either a 'src' or 'content' property.
+                                    // custom: false,
+                                    custom: [],
+                                        // Specifies the themes that will be available in the themes
+                                        // menu panel. Set to 'true' to show the themes menu panel
+                                        // with the default themes list. Alternatively, provide an
+                                        // array to specify the themes to make available in the
+                                        // themes menu panel, for example...
+                                        // [
+                                        //     { name: 'Black', theme: 'css/theme/black.css' },
+                                        //     { name: 'White', theme: 'css/theme/white.css' },
+                                        //     { name: 'League', theme: 'css/theme/league.css' }
+                                        // ]
+                                        themes: false,
+
+                                            // Specifies the path to the default theme files. If your
+                                            // presentation uses a different path to the standard reveal
+                                            // layout then you need to provide this option, but only
+                                            // when 'themes' is set to 'true'. If you provide your own 
+                                            // list of themes or 'themes' is set to 'false' the 
+                                            // 'themesPath' option is ignored.
+                                            themesPath: 'css/theme/',
+
+                                                // Specifies if the transitions menu panel will be shown.
+                                                // Set to 'true' to show the transitions menu panel with
+                                                // the default transitions list. Alternatively, provide an
+                                                // array to specify the transitions to make available in
+                                                // the transitions panel, for example...
+                                                // ['None', 'Fade', 'Slide']
+                                                transitions: false,
+
+                                                    // Adds a menu button to the slides to open the menu panel.
+                                                    // Set to 'false' to hide the button.
+                                                    openButton: true,
+
+                                                        // If 'true' allows the slide number in the presentation to
+                                                        // open the menu panel. The reveal.js slideNumber option must 
+                                                        // be displayed for this to take effect
+                                                        openSlideNumber: false,
+
+                                                            // If true allows the user to open and navigate the menu using
+                                                            // the keyboard. Standard keyboard interaction with reveal
+                                                            // will be disabled while the menu is open.
+                                                            keyboard: true,
+
+                                                                // Normally the menu will close on user actions such as
+                                                                // selecting a menu item, or clicking the presentation area.
+                                                                // If 'true', the sticky option will leave the menu open
+                                                                // until it is explicitly closed, that is, using the close
+                                                                // button or pressing the ESC or m key (when the keyboard 
+                                                                // interaction option is enabled).
+                                                                sticky: false,
+
+                                                                    // If 'true' standard menu items will be automatically opened
+                                                                    // when navigating using the keyboard. Note: this only takes 
+                                                                    // effect when both the 'keyboard' and 'sticky' options are enabled.
+                                                                    autoOpen: true,
+
+                                                                        // If 'true' the menu will not be created until it is explicitly
+                                                                        // requested by calling RevealMenu.init(). Note this will delay
+                                                                        // the creation of all menu panels, including custom panels, and
+                                                                        // the menu button.
+                                                                        delayInit: false,
+
+                                                                            // If 'true' the menu will be shown when the menu is initialised.
+                                                                            openOnInit: false,
+
+                                                                                // By default the menu will load it's own font-awesome library
+                                                                                // icons. If your presentation needs to load a different
+                                                                                // font-awesome library the 'loadIcons' option can be set to false
+                                                                                // and the menu will not attempt to load the font-awesome library.
+                                                                                loadIcons: false
+    },
+    chalkboard: {
+        toggleChalkboardButton: { left: "60px", bottom: "30px", top: "auto", right: "auto" },
+        toggleNotesButton: { left: "90px", bottom: "30px", top: "auto", right: "auto" },
+
+    }
+    });
+
+
+
+</script>
+</body>
+
+</html>
