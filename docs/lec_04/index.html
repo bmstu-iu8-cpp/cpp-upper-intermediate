@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>title</title>
+  <title>Многозадачность в C++</title>
 
   <meta name="description" content="">
   <meta name="author" content="">
@@ -297,9 +297,10 @@
             
             <h3><a id="user-content-содержание" class="anchor" href="#содержание" aria-hidden="true"></a>Содержание</h3>
 <ul>
-<li>параллелизм в ПО</li>
+<li>многозадачность в ПО</li>
 <li>переключение контекста потоков</li>
 <li><code>std::thread</code></li>
+<li><code>std::jthread</code></li>
 <li><code>std::async</code></li>
 <li><code>std::future</code></li>
 </ul>
@@ -310,15 +311,21 @@
 
 
     
-    <section>
         <section >
-            <h3><a id="user-content-параллелизм" class="anchor" href="#параллелизм" aria-hidden="true"></a>Параллелизм</h3>
-<p>Говоря о параллелизме, мы имеем ввиду, что несколько задач выполняются одновременно.</p>
+            
+            <h3><a id="user-content-многозадачность" class="anchor" href="#многозадачность" aria-hidden="true"></a>Многозадачность</h3>
+<p>Говоря о многозадачности, мы имеем ввиду, что несколько задач выполняются одновременно.</p>
+<p>Многозада́чность — это, в первую очередь, свойство операционной системы или среды выполнения.</p>
 
             </section>
-        
-            <section >
-                <h3><a id="user-content-параллелизм-1" class="anchor" href="#параллелизм-1" aria-hidden="true"></a>Параллелизм</h3>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-многозадачность-1" class="anchor" href="#многозадачность-1" aria-hidden="true"></a>Многозадачность</h3>
 <p>Оборудование с одноядерными процессорами <strong>не способно</strong> выполнять одновременно несколько задач. Но они могут создавать иллюзию этого.</p>
 
             </section>
@@ -336,17 +343,33 @@
 
 
     
+        <section >
+            
+            <h3><a id="user-content-типы-многозадачности" class="anchor" href="#типы-многозадачности" aria-hidden="true"></a>Типы многозадачности</h3>
+<p>Существует два типа многозадачности:</p>
+<ul>
+<li>процессная многозадачность</li>
+<li>поточная многозадачность</li>
+</ul>
+<p>Далее в лекции будем говорить о поточной многозадачности.</p>
+
+            </section>
+    
+
+
+
+    
     <section>
         <section >
-            <h3><a id="user-content-причины-использовать-параллелизм" class="anchor" href="#причины-использовать-параллелизм" aria-hidden="true"></a>Причины использовать параллелизм</h3>
-<p>Первая причина для использования параллелизма – это разделение обязанностей.</p>
+            <h3><a id="user-content-причины-использовать-многозадачность" class="anchor" href="#причины-использовать-многозадачность" aria-hidden="true"></a>Причины использовать многозадачность</h3>
+<p>Первая причина для использования многопоточное программирование – это разделение обязанностей.</p>
 <p>Например, пользовательский интерфейс зачастую выполняется в отдельном потоке, в то время как основная логика ПО выполняется в других потоках.</p>
 
             </section>
         
             <section >
-                <h3><a id="user-content-причины-использовать-параллелизм-1" class="anchor" href="#причины-использовать-параллелизм-1" aria-hidden="true"></a>Причины использовать параллелизм</h3>
-<p>Другая причина использования параллелизма - повышение производительности.</p>
+                <h3><a id="user-content-причины-использовать-многозадачность-1" class="anchor" href="#причины-использовать-многозадачность-1" aria-hidden="true"></a>Причины использовать многозадачность</h3>
+<p>Другая причина использования многопоточное программирование – повышение вычислительной производительности.</p>
 <p>Сейчас существуют персональные компьютеры с 16 и более ядрами (не говоря уже о серверном оборудовании). При таком раскладе использование только одного потока для выполнения всех задач является ошибкой.</p>
 
             </section>
@@ -365,7 +388,7 @@
         <section >
             
             <h3><a id="user-content-разделение-обязанностей" class="anchor" href="#разделение-обязанностей" aria-hidden="true"></a>Разделение обязанностей</h3>
-<p>Самые распространненые применения параллелизма:</p>
+<p>Самые распространненые применения многопоточности:</p>
 <ul>
 <li>отзывчивый интерфейс приложения</li>
 <li>запуск длительнных операций в отдельном потоке (например, сетевые запросы, чтение и запись на диск)</li>
@@ -380,8 +403,8 @@
         <section >
             
             <h3><a id="user-content-повышение-производительности" class="anchor" href="#повышение-производительности" aria-hidden="true"></a>Повышение производительности</h3>
-<p>Параллелизм ради повышения производительности приложения встречается не так часто, как асинхронное выполнение IO операций.</p>
-<p>Однако, использование параллелизма позволяет значительно повысить производительность приложения.</p>
+<p>Многопоточность ради повышения вычислительной производительности приложения встречается не так часто, как асинхронное выполнение IO операций.</p>
+<p>Однако, иногда, использование нескольких потоков позволяет значительно повысить производительность приложения.</p>
 
             </section>
     
@@ -503,11 +526,20 @@ int main() {
             <section >
                 <h3><a id="user-content-stdthread-1" class="anchor" href="#stdthread-1" aria-hidden="true"></a><code>std::thread</code></h3>
 <p>До вызова деструктора объекта типа <code>std::thread</code> необходимо вызвать или метод <code>join()</code>, или метод <code>detach()</code>.</p>
+<p>Иначе, во время вызова деструктора произойдет вызов <code>std::terminate()</code>.</p>
 
             </section>
         
-            <section >
-                <h4><a id="user-content-stdthreadjoin" class="anchor" href="#stdthreadjoin" aria-hidden="true"></a><code>std::thread::join</code></h4>
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h4><a id="user-content-stdthreadjoin" class="anchor" href="#stdthreadjoin" aria-hidden="true"></a><code>std::thread::join</code></h4>
 <p>Вызов метода <code>join</code> приведет к ожиданию завершения потока.</p>
 <p>Это значит, что до тех пор пока поток не завершит своё выполнение, основной поток не будет выполнять код находящийся после вызова метода <code>join()</code>.</p>
 
@@ -520,8 +552,16 @@ int main() {
 
             </section>
         
-            <section >
-                <h4><a id="user-content-stdthreaddetach" class="anchor" href="#stdthreaddetach" aria-hidden="true"></a><code>std::thread::detach</code></h4>
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h4><a id="user-content-stdthreaddetach" class="anchor" href="#stdthreaddetach" aria-hidden="true"></a><code>std::thread::detach</code></h4>
 <p>Вызов функции detach оставляет поток работать в <strong>фоновом</strong> режиме.</p>
 <p>Это значит, что код находящийся после вызова метода <code>detach()</code> может выполняться пока выполняется запущенный поток.</p>
 
@@ -533,18 +573,83 @@ int main() {
 
             </section>
         
-            <section >
-                <h3><a id="user-content-передача-владения-потоком" class="anchor" href="#передача-владения-потоком" aria-hidden="true"></a>Передача владения потоком</h3>
-<p>Класс <code>std::thread</code> является перемещающимся типом со всеми вытекающими последствиями:</p>
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-stdjthread" class="anchor" href="#stdjthread" aria-hidden="true"></a><code>std::jthread</code></h3>
+<p><code>std::jthread</code> обладает аналогичным поведением как и <code>std::thread</code> с двумя особенностями:</p>
 <ul>
-<li>возможность передавать владение потоком “из рук в руки”</li>
-<li>позволяет хранить объекты типа <code>std::thread</code> контейнерах</li>
+<li>в своем деструкторе автоматически вызывает метод join</li>
+<li>можно остановить выполение потока, если предусмотреть такую возможность</li>
 </ul>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-stdjthread-1" class="anchor" href="#stdjthread-1" aria-hidden="true"></a><code>std::jthread</code></h3>
+<p>Объекты типа <code>std::jthread</code> содержат поле <code>std::stop_source</code> – некоторое совместное состояние, которое используется для остановки потока.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-пример" class="anchor" href="#пример" aria-hidden="true"></a>Пример</h3>
+<pre><code class="language-cpp">std::jthread th([](std::stop_token stoken) {
+    int counter{0};
+    while (counter &lt; 10){
+        std::this_thread::sleep_for(0.2s);
+
+        if (stoken.stop_requested()) return;
+
+        std::cerr &lt;&lt; counter &lt;&lt; std::endl;
+        ++counter;
+    }
+});
+std::this_thread::sleep_for(1s);
+
+th.request_stop();
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-объяснение-примера" class="anchor" href="#объяснение-примера" aria-hidden="true"></a>Объяснение примера</h3>
+<p>Объекты типа <code>std::stop_source</code> связаны с соответствующим <code>std::stop_token</code>.</p>
+<p>Если у объекта <code>std::stop_source</code> вызывать метод <code>request_stop</code>, но меняется внутренее состояние объекта.</p>
+<p>После этого у связанного <code>std::stop_token</code> метод <code>stop_requested</code> будет возвращать <code>true</code>.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-взаимоотношения-jthread-stop_source-stop_token" class="anchor" href="#взаимоотношения-jthread-stop_source-stop_token" aria-hidden="true"></a>Взаимоотношения jthread, stop_source, stop_token</h3>
+<p>Объекты <code>std::jthread</code> содержат поле типа <code>std::stop_source</code>.</p>
+<p>В конструкторе <code>std::jthread</code> происходит связывание поля <code>std::stop_source</code> с первым аргументом выполняемой фукнции.</p>
+<p>Поэтому, если вы хотите останавливать поток используя описанный механизм, то <code>std::stop_token</code> должен быть первым аргументом.</p>
 
             </section>
         
 
     </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-передача-владения-потоком" class="anchor" href="#передача-владения-потоком" aria-hidden="true"></a>Передача владения потоком</h3>
+<p>Класс <code>std::thread</code> и <code>std::jthread</code> являются перемещающимся типами со всеми вытекающими последствиями:</p>
+<ul>
+<li>возможность передавать владение потоком “из рук в руки”</li>
+<li>позволяет хранить объекты типа <code>std::thread</code>/<code>std::jthread</code> контейнерах</li>
+</ul>
+
+            </section>
     
 
 
@@ -687,6 +792,7 @@ try {
             <h3><a id="user-content-домашнее-задание" class="anchor" href="#домашнее-задание" aria-hidden="true"></a>Домашнее задание</h3>
 <ul>
 <li><code>thread_local</code></li>
+<li><code>std::stop_callback</code></li>
 </ul>
 
             </section>
