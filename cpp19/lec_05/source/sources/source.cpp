@@ -1,36 +1,21 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
+
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <map>
+
 
 using boost::asio::ip::tcp;
-
-std::string make_http_message(const char* data, int len) {
-  std::string ua(data, len);
-  std::stringstream response_body;
-  std::stringstream response;
-  response_body << "<title>Test C++ HTTP Server</title>\n"
-                << "<h1>Test page</h1>\n"
-                << "<p>This is body of the test page...</p>\n"
-                << "<h2>Request headers</h2>\n"
-                << "<pre>" << ua << "</pre>\n"
-                << "<em><small>Test C++ Http Server</small></em>\n";
-
-  // Сормируем весь ответ вместе с заголовками
-  response << "HTTP/1.1 200 OK\r\n"
-           << "Version: HTTP/1.1\r\n"
-           << "Content-Type: text/html; charset=utf-8\r\n"
-           << "Content-Length: " << response_body.str().length() << "\r\n\r\n"
-           << response_body.str();
-  return response.str();
-}
 
 class Request {
  public:
   Request(tcp::socket& socket) {
     boost::system::error_code error;
     length_ = socket.read_some(boost::asio::buffer(data_), error);
+    // Parsing data...
   }
 
  private:
@@ -58,14 +43,14 @@ class Response {
     return *this;
   }
 
-  boost::system::error_code Send(tcp::socket& socket) {
+  boost::system::error_code SendTo(tcp::socket& socket) {
     std::stringstream response;
     response << "HTTP/1.1 " << code_ << " " << Code() << "\r\n";
 
-    for (auto&& [header_name, value] : headers_) {
+    for (const auto& [header_name, value] : headers_) {
       response << header_name << ": " << value << "\r\n";
     }
-    
+
     response << "\r\n" << body_;
 
     auto s = response.str();
@@ -77,6 +62,7 @@ class Response {
 
  private:
   const char* Code() {
+    // TODO
     if (code_ == 200)
       return "OK";
     else
@@ -90,13 +76,12 @@ class Response {
 
 void Handler(tcp::socket socket) {
   Response response;
-  response
-    .AddHeader("Content-Type", "text/html; charset=utf-8")
-      .AddHeader("HeaderNAme", "120340120340132")
+  response.AddHeader("Content-Type", "text/html; charset=utf-8")
+      .AddHeader("HeaderName", "120340120340132")
       .SetCode(200)
-      .SetBody("OK!");
+      .SetBody("Hello world!");
 
-  response.Send(socket);
+  response.SendTo(socket);
 }
 
 int main() {
@@ -109,8 +94,9 @@ int main() {
 
     for (;;) {
       tcp::socket socket(io_service);
-
+      std::cout << "waiting client..." << std::endl;
       acceptor.accept(socket);
+      std::cout << "yes..." << std::endl;
 
       std::thread worker(Handler, std::move(socket));
       worker.detach();
