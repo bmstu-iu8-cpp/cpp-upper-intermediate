@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>title</title>
+  <title>Сетевое взаимодействие</title>
 
   <meta name="description" content="">
   <meta name="author" content="">
@@ -531,33 +531,54 @@
 
 
     
+    <section>
         <section >
-            
             <h3><a id="user-content-модель-tcpip" class="anchor" href="#модель-tcpip" aria-hidden="true"></a>Модель TCP/IP</h3>
 <img src="./res/tcp_ip.png" width=60% alt="content" />
             </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-модель-tcpip-1" class="anchor" href="#модель-tcpip-1" aria-hidden="true"></a>Модель TCP/IP</h3>
+        
+            <section >
+                <h3><a id="user-content-модель-tcpip-1" class="anchor" href="#модель-tcpip-1" aria-hidden="true"></a>Модель TCP/IP</h3>
 <img src="./res/tcp_ip_osi.jpg" width=100% alt="content" />
             </section>
+        
+
+    </section>
     
 
 
 
     
+    <section>
         <section >
-            
             <h3><a id="user-content-сокеты-беркли" class="anchor" href="#сокеты-беркли" aria-hidden="true"></a>Сокеты Беркли</h3>
 <p>Для работы с сетью традиционно используются <strong>сокеты</strong>.</p>
 <p>Сокет – это абстракция, которая позволяет работать с сетевыми ресурсами, как с файлами. Мы можем писать и читать данные из сокета почти так же, как из обычного файла.</p>
 
             </section>
+        
+            <section >
+                <h3><a id="user-content-псевдокод" class="anchor" href="#псевдокод" aria-hidden="true"></a>Псевдокод</h3>
+<pre><code class="language-cpp">// Server
+std::vector&lt;socket_stream&gt; sockets;
+
+for (auto&amp; socket : sockets) {
+  socket &lt;&lt; &quot;some info from server&quot;;
+  std::string data;
+  socket &gt;&gt; data;
+}
+</code></pre>
+<pre><code class="language-cpp">// Client
+socket_stream srv(&quot;192.41.1.1&quot;, 50123);
+std::string data;
+srv &gt;&gt; data;
+srv &lt;&lt; &quot;send info to server&quot;;
+</code></pre>
+
+            </section>
+        
+
+    </section>
     
 
 
@@ -580,19 +601,30 @@
             </section>
         
             <section >
-                <h3><a id="user-content-функция-socket" class="anchor" href="#функция-socket" aria-hidden="true"></a>Функция <code>socket</code></h3>
+                <img src="./res/socket_functions.png" width=58% alt="content" margin-top=-10px />
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-функция-socket" class="anchor" href="#функция-socket" aria-hidden="true"></a>Функция <code>socket</code></h3>
 <p><a href="http://man7.org/linux/man-pages/man2/socket.2.html">Функция <code>socket</code></a> - создает новый сокет с заданными параметрами.</p>
 <pre><code class="language-cpp">int socket(int domain, int type, int protocol);
 
 int sock_udp = socket(AF_INET,
       SOCK_DGRAM, IPPROTO_UDP);
-int sock_tcp = socket(AF_INET,SOCK_STREAM, IPPROTO_TCP);
+
+int sock_tcp = socket(AF_INET,
+      SOCK_STREAM, IPPROTO_TCP);
 </code></pre>
 
             </section>
-        
-
-    </section>
     
 
 
@@ -624,7 +656,8 @@ int sock_tcp = socket(AF_INET,SOCK_STREAM, IPPROTO_TCP);
         
             <section >
                 <h3><a id="user-content-функция-listen-1" class="anchor" href="#функция-listen-1" aria-hidden="true"></a>Функция <code>listen</code></h3>
-<p>Функция <code>listen</code> принимает дескриптор слушающего сокета и размер очереди запросов. Когда клиент пытается соединиться с сервером, его запрос ставится в очередь, так как сервер может быть занят обработкой других запросов. Если очередь заполнена, все последующие запросы будут игнорироваться.</p>
+<p>Функция <code>listen</code> принимает дескриптор слушающего сокета и размер очереди запросов.</p>
+<p>Когда клиент пытается соединиться с сервером, его запрос ставится в очередь, так как сервер может быть занят обработкой других запросов. Если очередь заполнена, все последующие запросы будут игнорироваться.</p>
 
             </section>
         
