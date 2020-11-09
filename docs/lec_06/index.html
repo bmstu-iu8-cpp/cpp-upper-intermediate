@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>title</title>
+  <title>Синхронизация потоков</title>
 
   <meta name="description" content="">
   <meta name="author" content="">
@@ -361,8 +361,16 @@
 
             </section>
         
-            <section >
-                <h3><a id="user-content-примитивы-синхронизации" class="anchor" href="#примитивы-синхронизации" aria-hidden="true"></a>Примитивы синхронизации</h3>
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-примитивы-синхронизации" class="anchor" href="#примитивы-синхронизации" aria-hidden="true"></a>Примитивы синхронизации</h3>
 <p>Существуют некоторые примитивы, которые помогают выполнять синхронизацию потоков.</p>
 <ul>
 <li>мютексы</li>
@@ -373,9 +381,6 @@
 </ul>
 
             </section>
-        
-
-    </section>
     
 
 
@@ -389,7 +394,7 @@
             </section>
         
             <section >
-                <h3><a id="user-content-устранение-гонок" class="anchor" href="#устранение-гонок" aria-hidden="true"></a>Устранение гонок</h3>
+                <h3><a id="user-content-data-race" class="anchor" href="#data-race" aria-hidden="true"></a>Data race</h3>
 <ul>
 <li>
 <p>Гонки приводят к ошибкам в случае, если они (гонки) приводят к нарушению инвариантов.</p>
@@ -402,7 +407,7 @@
             </section>
         
             <section >
-                <h3><a id="user-content-устранение-гонок-1" class="anchor" href="#устранение-гонок-1" aria-hidden="true"></a>Устранение гонок</h3>
+                <h3><a id="user-content-устранение-гонок" class="anchor" href="#устранение-гонок" aria-hidden="true"></a>Устранение гонок</h3>
 <p>Чтобы избавиться от проблематичных гонок, структуру данных можно снабдить неким защитным механизмом, который гарантирует, что только один поток может видеть промежуточные состояния при нарушении инвариантов.</p>
 
             </section>
@@ -424,7 +429,7 @@
         <section >
             <h3><a id="user-content-mutual-exclusion---mutex" class="anchor" href="#mutual-exclusion---mutex" aria-hidden="true"></a>Mutual exclusion - mutex</h3>
 <p>Взаимоисключающая блокировка - простейший сбособ защиты разделяемых данных.</p>
-<p>Мьютексы - наиболее общий механизм защиты данных в С++.</p>
+<p>Мьютексы - наиболее общий механизм защиты данных.</p>
 
             </section>
         
@@ -481,6 +486,7 @@ std::jthread Fet(WriteVerse);
 <pre><code class="language-cpp">void WriteVerse() {
   mutex.lock();
   for (auto str : CreateVerse()) {
+    dAnthes.Shoots();
     // Что случится, если будет сгенерировано исключение?
     paper &lt;&lt; str;
   }
@@ -503,6 +509,7 @@ struct lock_guard {
 <pre><code class="language-cpp">void WriteVerse() {
   std::lock_guard&lt;std::mutex&gt; lk(mutex);
   for (auto str : CreateVerse()) {
+    dAnthes.Shoots();
     paper &lt;&lt; str;
   }
 }
@@ -557,25 +564,25 @@ struct unique_lock {
     
     <section>
         <section >
-            <h3><a id="user-content-shared-mutex" class="anchor" href="#shared-mutex" aria-hidden="true"></a>Shared Mutex</h3>
+            <h3><a id="user-content-read-write-mutex" class="anchor" href="#read-write-mutex" aria-hidden="true"></a>Read Write Mutex</h3>
 <p>Если несколько потоков только считывают данные и <strong>не модифицируют</strong> их, то гонок за данными не возникает.</p>
 
             </section>
         
             <section >
-                <h3><a id="user-content-shared-mutex-1" class="anchor" href="#shared-mutex-1" aria-hidden="true"></a>Shared Mutex</h3>
-<p>Поэтому иногда разумно предоставлять <strong>доступ для чтения</strong> к разделяемым данным нескольким потоком одновременно.</p>
+                <h3><a id="user-content-read-write-mutex-1" class="anchor" href="#read-write-mutex-1" aria-hidden="true"></a>Read Write Mutex</h3>
+<p>Поэтому иногда разумно предоставлять <strong>доступ для чтения</strong> к разделяемым данным нескольким потокам одновременно.</p>
 
             </section>
         
             <section >
-                <h3><a id="user-content-shared-mutex-2" class="anchor" href="#shared-mutex-2" aria-hidden="true"></a>Shared Mutex</h3>
+                <h3><a id="user-content-read-write-mutex-2" class="anchor" href="#read-write-mutex-2" aria-hidden="true"></a>Read Write Mutex</h3>
 <p>Если же какой-то поток пытается модифицировать данные, то ему следует предоставлять <strong>монопольный</strong> доступ.</p>
 
             </section>
         
             <section >
-                <h3><a id="user-content-stdshared_mutex" class="anchor" href="#stdshared_mutex" aria-hidden="true"></a><code>std::shared_mutex</code></h3>
+                <h3><a id="user-content-read-write-mutex-3" class="anchor" href="#read-write-mutex-3" aria-hidden="true"></a>Read Write Mutex</h3>
 <p>Для такой ситуации существует класс <code>shared_mutex</code>.</p>
 <pre><code class="language-cpp">std::shared_mutex m;
 
@@ -613,19 +620,21 @@ void modify() {
         
             <section >
                 <h3><a id="user-content-deadlock-1" class="anchor" href="#deadlock-1" aria-hidden="true"></a>Deadlock</h3>
-<img src="./res/pushkin.jpg" width=20% alt="content" />
-<img src="./res/pero.jpg" width=20% alt="content"/>
-<img src="./res/lermontov.jpg" width=20% alt="content" />
+<img src="./res/deadlock_hire.jpg" width=40% alt="content" />
             </section>
         
             <section >
                 <h3><a id="user-content-deadlock-2" class="anchor" href="#deadlock-2" aria-hidden="true"></a>Deadlock</h3>
-<img src="./res/deadlock_hire.jpg" width=45% alt="content" />
+<img src="./res/pushkin.jpg" width=20% alt="content" />
+<img src="./res/pero.jpg" width=20% alt="content"/>
+<img src="./res/lermontov.jpg" width=20% alt="content" />
+
             </section>
         
             <section >
                 <h3><a id="user-content-причины-deadlock" class="anchor" href="#причины-deadlock" aria-hidden="true"></a>Причины deadlock</h3>
-<p>Например, deadlock возможен, когда для выполнения процедуры потоки должны захватить два мьютекса, но по каким-то причинам каждый поток захватил только по одному мьютексу.</p>
+<p>Deadlock возможен, когда для выполнения процедуры потоки должны захватить два мьютекса,
+но по каким-то причинам каждый поток захватил только по одному мьютексу.</p>
 
             </section>
         
@@ -659,7 +668,7 @@ void modify() {
 <ul>
 <li>Использовать иерархию блокировок.</li>
 </ul>
-<p><em>Идея состоит в том, чтобы каждому мьютексу присвоить численное значение уровня, и позволять захватывать потоку только мьютексы с большим значением. Этим обеспечивается строгий порядок захвата мьютексов</em></p>
+<p>Идея состоит в том, чтобы каждому мьютексу присвоить численное значение уровня, и позволять захватывать потоку только мьютексы с большим значением. Этим обеспечивается строгий порядок захвата мьютексов</p>
 
             </section>
         
@@ -668,7 +677,7 @@ void modify() {
 <ul>
 <li>Не вызывать пользовательский код, когда удерживаете мьютекс.</li>
 </ul>
-<p><em>Неизвестно, что выполняет пользовательский код. Возможно, он будет пытаться захватить еще один мьютекс.</em></p>
+<p>Неизвестно, что выполняет пользовательский код. Возможно, он будет пытаться захватить еще один мьютекс.</p>
 
             </section>
         
@@ -677,7 +686,7 @@ void modify() {
 <ul>
 <li>Попытайтесь свести задачу к однопоточному режиму работы.</li>
 </ul>
-<p><em>Возможно, синхронизация потоков и мьютексы не нужны. Если вы сведете задачу к однопоточному режиму или к случаю, когда функции будут выполняться последовательно, это решит проблемы многопоточности.</em></p>
+<p>Возможно, синхронизация потоков и мьютексы не нужны. Если вы сведете задачу к однопоточному режиму или к случаю, когда функции будут выполняться последовательно, это решит проблемы многопоточности.</p>
 
             </section>
         
