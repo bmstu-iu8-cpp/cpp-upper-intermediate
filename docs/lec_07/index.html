@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>title</title>
+  <title>Распространенные практики в многопоточности</title>
 
   <meta name="description" content="">
   <meta name="author" content="">
@@ -680,20 +680,6 @@
             </section>
         
             <section >
-                <h3><a id="user-content-асинхронное-приготовление-ужина" class="anchor" href="#асинхронное-приготовление-ужина" aria-hidden="true"></a>Асинхронное приготовление ужина</h3>
-<img src="./res/oven.jpg" width=75%/>
-<aside class="notes"> Рассмотрим Callback для нашей асинхронной операции - приготовить ужин. После того как ужин приготовился, результат этой операции надо как обработать. Как?</aside>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-пример-callback" class="anchor" href="#пример-callback" aria-hidden="true"></a>Пример callback</h3>
-<img src="./res/oven_callback.jpg"  width=80%/>
-<aside class="notes"> Конечно же сожрать! Поэтому Callback к нашей асинхронной операции будет: достать ужин из духовки, поставить на стол, разрезать и сожрать.</aside>
-
-            </section>
-        
-            <section >
                 <h3><a id="user-content-callback-1" class="anchor" href="#callback-1" aria-hidden="true"></a>Callback</h3>
 <pre><code class="language-cpp">1 socket.async_receive(boost::asio::buffer(data), on_read_callback);
 </code></pre>
@@ -833,9 +819,14 @@
             <section >
                 <h3><a id="user-content-резюме-2" class="anchor" href="#резюме-2" aria-hidden="true"></a>Резюме</h3>
 <ul>
-<li>
-<p>при разработке callback-функций продумывайте, как объекты “доживут” до вызова callback’a</p>
-</li>
+<li>при разработке callback-функций продумывайте, как объекты “доживут” до вызова callback’a</li>
+</ul>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-резюме-3" class="anchor" href="#резюме-3" aria-hidden="true"></a>Резюме</h3>
+<ul>
 <li>
 <p>использование сопрограмм в асинхронном программировании помогает упростить код</p>
 </li>
@@ -1101,7 +1092,7 @@
     
         <section >
             
-            <h3><a id="user-content-резюме-3" class="anchor" href="#резюме-3" aria-hidden="true"></a>Резюме</h3>
+            <h3><a id="user-content-резюме-4" class="anchor" href="#резюме-4" aria-hidden="true"></a>Резюме</h3>
 <ul>
 <li>lock-free программирование – один из альтернативных методов реализации потокобезопасного кода</li>
 <li>lock-free программирование – не панацея и не надо бездумно применять его вместо блокирующих операций</li>
@@ -1119,11 +1110,9 @@
             
             <h3><a id="user-content-домашнее-задание" class="anchor" href="#домашнее-задание" aria-hidden="true"></a>Домашнее задание</h3>
 <ul>
-<li>stackless coroutine</li>
-<li>stackfull coroutine</li>
-<li>stackfull vs stackless</li>
+<li>C++20. Coroutines <a href="https://m.habr.com/ru/post/519464/">https://m.habr.com/ru/post/519464/</a></li>
+<li>stackfull coroutines <strong>vs</strong> stackless coroutines</li>
 <li>освобождение памяти в lock-free структурах данных</li>
-<li>hazard pointers</li>
 </ul>
 
             </section>
@@ -1149,7 +1138,12 @@
 </ul>
 <h4><a id="user-content-для-саморазвития" class="anchor" href="#для-саморазвития" aria-hidden="true"></a>Для саморазвития</h4>
 <ul>
-<li><a href="https://docs.microsoft.com/ru-ru/windows/win32/dxtecharts/lockless-programming">Lockless Programming Considerations for Xbox 360 and Microsoft Windows</a></li>
+<li>
+<p><a href="https://docs.microsoft.com/ru-ru/windows/win32/dxtecharts/lockless-programming">Lockless Programming Considerations for Xbox 360 and Microsoft Windows</a></p>
+</li>
+<li>
+<p>hazard pointers</p>
+</li>
 </ul>
 
             </section>
