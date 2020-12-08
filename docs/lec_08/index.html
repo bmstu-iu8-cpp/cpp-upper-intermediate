@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>title</title>
+  <title>Управление памятью</title>
 
   <meta name="description" content="">
   <meta name="author" content="">
@@ -276,6 +276,7 @@
         <section >
             
             <h1><a id="user-content-лекция-8" class="anchor" href="#лекция-8" aria-hidden="true"></a>Лекция 8</h1>
+<h2><a id="user-content-управление-памятью" class="anchor" href="#управление-памятью" aria-hidden="true"></a>Управление памятью</h2>
 
             </section>
     
@@ -287,10 +288,9 @@
             
             <h3><a id="user-content-содержание" class="anchor" href="#содержание" aria-hidden="true"></a>Содержание</h3>
 <ul>
-<li>move-семантика</li>
-<li>шаблоны проектирования</li>
-<li>структуры данных</li>
-<li>STL алгоритмы</li>
+<li>новые и старые new и delete</li>
+<li>stl аллокаторы</li>
+<li>распространненые модели управления памятью</li>
 </ul>
 
             </section>
@@ -301,7 +301,10 @@
     
         <section >
             
-            <h2><a id="user-content-семантика-перемещения" class="anchor" href="#семантика-перемещения" aria-hidden="true"></a>Семантика перемещения</h2>
+            <h3><a id="user-content-старые-new-и-delete" class="anchor" href="#старые-new-и-delete" aria-hidden="true"></a>Старые new и delete</h3>
+<pre><code class="language-cpp">T * ptr = new T();
+delete ptr;
+</code></pre>
 
             </section>
     
@@ -311,446 +314,344 @@
     
     <section>
         <section >
-            <h3><a id="user-content-проблема" class="anchor" href="#проблема" aria-hidden="true"></a>Проблема</h3>
-<pre><code class="language-cpp">String GetData(tcp::socket socket);
-void Modify(String&amp; str);
-std::vector&lt;String&gt; storage;
-</code></pre>
-<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
-  auto data = GetData(socket);
-  Modify(data);
-  storage[i] = data; // Копирование строки.
-} // Вызывается деструктор |data|.
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-we-need-to-go-deeper" class="anchor" href="#we-need-to-go-deeper" aria-hidden="true"></a>We need to go deeper</h3>
-<img src="./res/go-deeper.jpg"/>
-            </section>
-        
-            <section >
-                <h3><a id="user-content-копирование-строк" class="anchor" href="#копирование-строк" aria-hidden="true"></a>Копирование строк</h3>
-<pre><code class="language-cpp">// string.h
-class String {
-  char* data_;
- public:
-  String(const String&amp; oth);
-  String&amp; operator=(const String&amp; oth);
-};
-</code></pre>
-<pre><code class="language-cpp">// string.cpp
-String::String(const String&amp; oth) {
-  data_ = new char[oth.size() + 1];
-  memcpy(data_, oth.data_, oth.size() + 1);
-}
-
-String&amp; String::operator=(const String&amp; oth) {
-  if (this != &amp;oth) {
-    delete[] data_;
-    data_ = new char[oth.size() + 1];
-    memcpy(data_, oth.data_, oth.size() + 1);
-  }
-  return *this;
-}
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-идея" class="anchor" href="#идея" aria-hidden="true"></a>Идея</h3>
-<pre><code class="language-cpp">String::move_to(String&amp; b) {
-  char* tmp = this-&gt;data_;
-  this-&gt;data_ = b.data_;
-  b.data_ = tmp;
-}
-</code></pre>
-<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
-  auto data = GetData(socket);
-  Modify(data);
-  data.move_to(storage[i]); // Избавляемся от копирования.
-} // Вызывается деструктор пустой |data|.
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-move-семантина-с03" class="anchor" href="#move-семантина-с03" aria-hidden="true"></a>Move-семантина С++03</h3>
-<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
-  auto data = GetData(socket);
-  Modify(data);
-  data.swap(storage[i]); // Избавляемся от копирования.
-} // Вызывается деструктор пустой |data|.
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-swap-как-move-семантика" class="anchor" href="#swap-как-move-семантика" aria-hidden="true"></a><code>swap</code> как move-семантика</h3>
-<p>Использование <code>swap</code> помогает повысить производительность приложения.</p>
-<p>Однако, иногда использовать <code>swap</code> для перемещения данных неудобно. Во-вторых, это усложняет и запутывает код.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-move-семантина-с11" class="anchor" href="#move-семантина-с11" aria-hidden="true"></a>Move-семантина С++11</h3>
-<pre><code class="language-cpp">for (size_t i = 0; i &lt; N; ++i) {
-  auto data = GetData(socket);
-  Modify(data);
-  storage[i] = std::move(data); // Избавляемся от копирования.
-} // Вызывается деструктор пустой |data|.
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-перемещение-строк" class="anchor" href="#перемещение-строк" aria-hidden="true"></a>Перемещение строк</h3>
-<pre><code class="language-cpp">// string.h
-class String {
-  char* data_;
- public:
-  String(String&amp;&amp; oth);
-  String&amp; operator=(String&amp;&amp; oth);
-};
-</code></pre>
-<pre><code class="language-cpp">// string.cpp
-String::String(String&amp;&amp; oth) {
-  data_ = oth.data_;
-  oth.data_ = nullptr;
-}
-
-String&amp; String::operator=(String&amp;&amp; oth) {
-  if (this != &amp;oth) {
-    delete[] data_;
-    data_ = oth.data_;
-    oth.data_ = nullptr;
-  }
-  return *this;
-}
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-rvalue" class="anchor" href="#rvalue" aria-hidden="true"></a>rvalue</h3>
-<p>Rvalue ссылки – техническое расширение языка C++. Они позволяют компилятору определить, когда необходимо использовать перемещение, вместо копирования.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-перегрузка-функций" class="anchor" href="#перегрузка-функций" aria-hidden="true"></a>Перегрузка функций</h3>
-<pre><code class="language-cpp">// Копирование.
-String(const String&amp; oth);
-String&amp; operator=(const String&amp; oth);
-
-// Перемещение.
-String(String&amp;&amp; oth);
-String&amp; operator=(String&amp;&amp; oth);
-</code></pre>
-<p>Благодаря rvalue, компиятор определяет какую из перегрузок функций необходимо выбрать.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-stdmove" class="anchor" href="#stdmove" aria-hidden="true"></a><code>std::move()</code></h3>
-<p><code>std::move</code> безусловно приводит аргумент к <code>rvalue</code> ссылке.</p>
-<pre><code class="language-cpp">template&lt;typename T&gt;
-decltype(auto) move(T&amp;&amp; arg) {
-  using ReturnType = remove_reference_t&lt;T&gt;&amp;&amp;;
-  return static_cast&lt;ReturnType&gt;(arg);
-}
-</code></pre>
-<p>С помощью функции <code>std::move</code> разработчик “подсказавает” компилятору, что необходимо использовать перемещение объекта.</p>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-рекомендации" class="anchor" href="#рекомендации" aria-hidden="true"></a>Рекомендации</h3>
-<ul>
-<li>Не используйте объект после того, как его переместили в другой!</li>
-<li>Не объявляйте объекты константными, если хотите иметь возможность их перемещать</li>
-<li><code>std::move</code> не гарантирует, что приведенный объект будет иметь право быть перемещенным</li>
-</ul>
-
-            </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-резюме" class="anchor" href="#резюме" aria-hidden="true"></a>Резюме</h3>
-<ul>
-<li>Семантика перемещения позволяет компиляторам заменять дорогостоящие операции копирования “дешевыми” перемещениями.</li>
-<li>Конструктор перемещения и оператор перемещения предоставляют контроль над семантикой перемещения.</li>
-</ul>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-резюме-1" class="anchor" href="#резюме-1" aria-hidden="true"></a>Резюме</h3>
-<ul>
-<li>Семантика перемещения позволяет также создавать типы, которые концептуально поддерживают только операции перемещения. К таким типам относятся как <code>std::unique_ptr</code>, <code>std::future</code>, <code>std::thread</code> и др.</li>
-</ul>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-        <section >
-            
-            <h2><a id="user-content-шаблоны-проектирования" class="anchor" href="#шаблоны-проектирования" aria-hidden="true"></a>Шаблоны проектирования</h2>
-
-            </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-что-это" class="anchor" href="#что-это" aria-hidden="true"></a>Что это</h3>
-<p>Шаблон проектирования – повторяемая архитектурная конструкция, представляющая собой решение проблемы проектирования в рамках некоторого часто возникающего контекста.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-зачем-нужны-шаблоны" class="anchor" href="#зачем-нужны-шаблоны" aria-hidden="true"></a>Зачем нужны шаблоны</h3>
-<ul>
-<li>предоставляют готовое решение некоторой известной проблемы</li>
-<li>позволяют поддерживать архитектуру приложения в лучшем состоянии, нежели без использования шаблонов</li>
-<li>помогают разговаривать разраотчикам на одном языке</li>
-<li>полезны при рефакторинге кода</li>
-</ul>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-неоправданное-применение" class="anchor" href="#неоправданное-применение" aria-hidden="true"></a>Неоправданное применение</h3>
-<p>Самая большая ошибка при работе с шаблонами проектирования – это неоправданное их использование.</p>
-<p><em>Если у тебя в руках молоток, то все предметы вокруг начинают напоминать гвозди.</em></p>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-простая-фабрика" class="anchor" href="#простая-фабрика" aria-hidden="true"></a>Простая фабрика</h3>
-<p>В С++ существует механизм полиморфизма на базе виртуальных функций.</p>
-<p>Полиморфизм позволяет вызывать функции производным классов, ничего не зная о них, а только оперировать базовым классом.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-полиморфизм" class="anchor" href="#полиморфизм" aria-hidden="true"></a>Полиморфизм</h3>
-<pre><code class="language-cpp">struct Unit {
-  void Attack(Unit&amp; target);
-}
-
-struct Knight : public Unit {
-  // ...
-};
-
-struct Archer : public Unit {
-  // ...
-};
-
-Unit* unit = new Knight();
-Unit* target = new Archer();
-unit-&gt;Attack(*target);
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-виртуальный-конструктор" class="anchor" href="#виртуальный-конструктор" aria-hidden="true"></a>Виртуальный конструктор</h3>
-<!-- https://refactoring.guru/ru/design-patterns/factory-comparison -->
-<!-- http://cpp-reference.ru/articles/virtual-constructor/ -->
-<p>Однако, чтобы создать объект дочернего класса необходимо явно указать в коде, объект какого класса создается.</p>
-<p>Решить данную проблему призван шаблон проектирования “простая фабрика”</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-простая-фабрика-1" class="anchor" href="#простая-фабрика-1" aria-hidden="true"></a>Простая фабрика</h3>
-<p>Паттерн “простая фабрика” – это класс, в котором есть один метод с большим условным оператором, выбирающим создаваемый продукт.</p>
-<p>Этот метод вызывают с неким параметром, по которому определяется какой из продуктов нужно создать.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-реализация" class="anchor" href="#реализация" aria-hidden="true"></a>Реализация</h3>
-<pre><code class="language-cpp">struct Barrack {
-  Unit* CreateUnit(UnitID unit_id) {
-
-    switch (unit_id) {
-      case UnitID::Knight:
-        return new Knight();
-      case UnitID::Archer:
-        return new Archer();
-      default:
-        return nullptr;
-    }
-
-  }
-};
-</code></pre>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-фабричный-метод" class="anchor" href="#фабричный-метод" aria-hidden="true"></a>Фабричный метод</h3>
-<p>Паттерн “фабричный метод” – это устройство классов, при котором подклассы могут переопределять тип создаваемого в суперклассе продукта.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-пример" class="anchor" href="#пример" aria-hidden="true"></a>Пример</h3>
-<pre><code class="language-cpp">struct Barrack {
-  virtual Unit* CreateUnit() = 0;
-
-  void Hire(Player&amp; player) {
-    auto* unit = CreateUnit();
-    player.AddToArmy(unit);
-  }
-};
-
-struct KnightBarrack : public Barrack {
-  Unit* CreateUnit() override {
-    return new Knight();
-  }
-};
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-пример-продолжение" class="anchor" href="#пример-продолжение" aria-hidden="true"></a>Пример (продолжение)</h3>
-<pre><code class="language-cpp">struct ArcherBarrack : public Barrack {
-  Unit* CreateUnit() override {
-    return new Archer();
-  }
-};
-
-ArcherBarrack archer_barrack;
-archer_barrack.Hire(player);
-</code></pre>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-singleton" class="anchor" href="#singleton" aria-hidden="true"></a>Singleton</h3>
-<p>Singleton – порождающий шаблон проектирования, гарантирующий, что в приложении будет единственный экземпляр некоторого класса, и предоставляющий глобальную точку доступа к этому экземпляру.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-назначение-паттерна" class="anchor" href="#назначение-паттерна" aria-hidden="true"></a>Назначение паттерна</h3>
-<p>Некоторые подсистемы в приложении должны существовать только в единственном экземпляре.</p>
-<p>Например, система логгирования или драйвер дисплея.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-цели-паттерна" class="anchor" href="#цели-паттерна" aria-hidden="true"></a>Цели паттерна</h3>
+            <h3><a id="user-content-как-работает-new" class="anchor" href="#как-работает-new" aria-hidden="true"></a>Как работает new?</h3>
 <ol>
-<li>
-<p>Гарантирует наличие единственного экземпляра класса</p>
-</li>
-<li>
-<p>Предоставляет глобальную точку доступа</p>
-</li>
+<li>определяет размер необходимой памяти для объекта</li>
+<li>запрашивает у ядра операционной системы (ОС) память необходимого размера</li>
+<li>вызывает конструктор объекта в выделенной ОС памяти</li>
+<li>возвращает указатель на выделенную в пункте 2 память</li>
 </ol>
 
             </section>
         
             <section >
-                <h3><a id="user-content-проблемы-паттерна" class="anchor" href="#проблемы-паттерна" aria-hidden="true"></a>Проблемы паттерна</h3>
-<p>С данным паттером традиционно связаны несколько проблем:</p>
+                <h3><a id="user-content-как-работает-delete" class="anchor" href="#как-работает-delete" aria-hidden="true"></a>Как работает delete?</h3>
+<ol>
+<li>оператор <code>delete</code> в качестве аргумента получает указатель на память, которую необходимо освободить</li>
+<li>вызывает деструктор объекта</li>
+<li>возвращает память обратно ядру ОС (<em>зависит от; возможен случай когда память возвращается аллокатору находящемуся вне ядра</em>).</li>
+</ol>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-новые-new" class="anchor" href="#новые-new" aria-hidden="true"></a>Новые new</h3>
+<p>А как работает вызывать конструктор объекта в выделенной ОС памяти мне?</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-placement-new" class="anchor" href="#placement-new" aria-hidden="true"></a>Placement new</h3>
+<p>Оператор <code>new</code> как и многие другие может быть переопределен.</p>
+<pre><code class="language-cpp">void* operator new(std::size_t count, void* ptr);
+</code></pre>
+<pre><code class="language-cpp">static byte static_data[10000];
+
+// ...
+
+Type* foo = new (static_data) Type(42, &quot;hello&quot;, &quot;world&quot;);
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h2><a id="user-content-placement-new-1" class="anchor" href="#placement-new-1" aria-hidden="true"></a>Placement new</h2>
+<p>В С++ определен, так называемый, <code>placement new</code>, который <strong>НЕ выделяет</strong> память, а только создает объект в области памяти, которая передана в качестве аргумента.</p>
+<p>Таким образом, можно конструировать объекты в известной области памяти. Эта память, в свою очередь, может быть выделена любым способом.</p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-новые-new-1" class="anchor" href="#новые-new-1" aria-hidden="true"></a>Новые new</h3>
+<p>Ок, а какие еще есть переопределения <code>new</code>?</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-nothrow-new" class="anchor" href="#nothrow-new" aria-hidden="true"></a>nothrow new</h3>
+<p>Как известно, если опертатор new не смог выделить память, то он генерирует исключение <code>std::bad_alloc</code>.</p>
+<p>Функция <code>malloc</code> не генерирует исключения, а возвращает NULL.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-nothrow-new-1" class="anchor" href="#nothrow-new-1" aria-hidden="true"></a>nothrow new</h3>
+<p>Иногда требуется, чтобы оператор <code>new</code> не генерировал исключение в случае ошибки, а возвращал невалидный адрес (<code>nullptr</code>). Для таких целей можно использовать переопределенный оператор <code>new</code> с параметром <code>std::nothrow</code>.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-nothrow-new-2" class="anchor" href="#nothrow-new-2" aria-hidden="true"></a>nothrow new</h3>
+<pre><code class="language-cpp">void* operator new(size_t size, const std::nothrow_t &amp;nt);
+</code></pre>
+<pre><code class="language-cpp">Type* ptr = new(std::nothrow) Type(42, &quot;hello&quot;, &quot;world&quot;);
+if(ptr != nullptr) {
+  // using ptr
+  // ...
+}
+</code></pre>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-пользовательские-new" class="anchor" href="#пользовательские-new" aria-hidden="true"></a>Пользовательские new</h3>
+<p>Можно определять свои операторы <code>new</code></p>
+<pre><code class="language-cpp">void* operator new (size_t cnt, const std::string&amp; s) {
+  std::cout &lt;&lt; s &lt;&lt; std::endl;
+  // просим у системы память размером cnt
+  return ::operator new(cnt);
+}
+
+Type* ptr = new (std::string(&quot;some debug message&quot;)) Type();
+// ...
+delete ptr;
+</code></pre>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-операторы-для-классов" class="anchor" href="#операторы-для-классов" aria-hidden="true"></a>Операторы для классов</h3>
+<p>С++ позволяет переопределять методы <code>new</code> и <code>delete</code> для классов.</p>
+<pre><code class="language-cpp">struct Type {
+  static void* operator new(std::size_t size)	{
+    void* p = ::operator new(size);
+    std::cout &lt;&lt; &quot;Type::new(&quot; &lt;&lt; size &lt;&lt; &quot;) &quot; &lt;&lt; p &lt;&lt; std::endl;
+    return p;
+  }
+
+  static void operator delete(void* p) {
+    std::cout &lt;&lt; &quot;Type::delete(&quot; &lt;&lt; p &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+    if (p == nullptr)
+      return;
+    ::operator delete(p);
+  }
+};
+</code></pre>
+<pre><code class="language-cpp">Type* ptr = new Type();
+delete ptr;
+</code></pre>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-резюме" class="anchor" href="#резюме" aria-hidden="true"></a>Резюме</h3>
+<p>Переопределенные операторы <code>new</code> позволяют управлять памятью в вашем приложении на любом уровне и позволяют писать приложения под любые требования.</p>
+<p>Но, к счастью (или сожалению), управлять памятью на таком уровне требуется не часто, только в очень специфичных условиях.</p>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h2><a id="user-content-модели-управления-памятью" class="anchor" href="#модели-управления-памятью" aria-hidden="true"></a>Модели управления памятью</h2>
+
+            </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-простейшая-модель-управления-памятью" class="anchor" href="#простейшая-модель-управления-памятью" aria-hidden="true"></a>Простейшая модель управления памятью</h3>
+<img src="./res/stupid_pool.png" style="background-color: #FFFFFF;" width=100% />
+<pre><code class="language-cpp">struct Block {
+  size_t size;
+  bool avaible;
+};
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простейшая-модель-управления-памятью-1" class="anchor" href="#простейшая-модель-управления-памятью-1" aria-hidden="true"></a>Простейшая модель управления памятью</h3>
+<p>Модель основана на массиве блоков памяти.</p>
+<p>Выделение памяти сравнимо с задачей нахождения первого свободного блока.</p>
+<p>Освобождение памяти: задача “удаление” элемента из массива.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простейшая-модель-управления-памятью-2" class="anchor" href="#простейшая-модель-управления-памятью-2" aria-hidden="true"></a>Простейшая модель управления памятью</h3>
+<p>В начале в памяти располагается только одна структура, размер которой равен всей свободной памяти.</p>
+<p>По мере выделения памяти появляются новые блоки. Размер блоков определяется размером объектов распологаемых в блоках.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простейшая-модель-управления-памятью-3" class="anchor" href="#простейшая-модель-управления-памятью-3" aria-hidden="true"></a>Простейшая модель управления памятью</h3>
+<p>При новом запросе на выделение памяти последовательно проверяются все доступные блоки необходимого размера.</p>
+<p>Освобождение блока памяти приводит к очередному поиску предыдущего свободного блока и изменению его размера.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простейшая-модель-управления-памятью-4" class="anchor" href="#простейшая-модель-управления-памятью-4" aria-hidden="true"></a>Простейшая модель управления памятью</h3>
+<p>Главный минус такой модели – скорость выделения и освобождения памяти: O(N), где N - количество блоков.</p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-vector-vs-list" class="anchor" href="#vector-vs-list" aria-hidden="true"></a>Vector vs list</h3>
+<p>Но можно получить постоянное время освобождение памяти путем изменения служебной структуры.</p>
+<pre><code class="language-cpp">struct MCB {
+  MCB* next;
+};
+</code></pre>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простая-модель-управления-памятью" class="anchor" href="#простая-модель-управления-памятью" aria-hidden="true"></a>Простая модель управления памятью</h3>
+<p>Модель основана на списке из блоков памяти одинакового размера.</p>
+<img src="./res/storage_add_block.png" style="background-color: #FFFFFF;" width=75% />
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простая-модель-управления-памятью-1" class="anchor" href="#простая-модель-управления-памятью-1" aria-hidden="true"></a>Простая модель управления памятью</h3>
+<p>Выделение памяти: возвращаем первый элемент списка (а ля <code>pop</code>).</p>
+<img src="./res/storage_after_malloc.png" style="background-color: #FFFFFF;" width=75% />
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простая-модель-управления-памятью-2" class="anchor" href="#простая-модель-управления-памятью-2" aria-hidden="true"></a>Простая модель управления памятью</h3>
+<p>Выделение памяти: возвращаем первый элемент списка (а ля <code>pop</code>).</p>
+<img src="./res/storage_after_malloc2.png" style="background-color: #FFFFFF;" width=75% />
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простая-модель-управления-памятью-3" class="anchor" href="#простая-модель-управления-памятью-3" aria-hidden="true"></a>Простая модель управления памятью</h3>
+<p>Освобождение памяти: добавляем в список участок памяти (а ля <code>push</code>).</p>
+<img src="./res/storage_after_free.png" style="background-color: #FFFFFF;" width=75% />
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простая-модель-управления-памятью-4" class="anchor" href="#простая-модель-управления-памятью-4" aria-hidden="true"></a>Простая модель управления памятью</h3>
+<p>Освобождение памяти: добавляем в список участок памяти (а ля <code>push</code>).</p>
+<img src="./res/storage_after_free2.png" style="background-color: #FFFFFF;" width=75% />
+            </section>
+        
+            <section >
+                <h3><a id="user-content-простая-модель-управления-памятью-5" class="anchor" href="#простая-модель-управления-памятью-5" aria-hidden="true"></a>Простая модель управления памятью</h3>
+<p>Главный плюс такой модели – константная скорость выделения и освобождения памяти.</p>
+<p>Минус – фрагментация памяти. Участки памяти перемешиваются, расходуется памяти больше, чем необходимо под объект.</p>
+
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-основные-проблемы-управления-памятью" class="anchor" href="#основные-проблемы-управления-памятью" aria-hidden="true"></a>Основные проблемы управления памятью</h3>
 <ul>
-<li>доступ и создание объекта в многопоточной среде</li>
-<li>время создания и разрушения объекта singleton’a</li>
+<li>фрагментация памяти</li>
+<li>параллелизм и конкурентность</li>
 </ul>
 
             </section>
         
             <section >
-                <h3><a id="user-content-классическая-реализация-singleton" class="anchor" href="#классическая-реализация-singleton" aria-hidden="true"></a>Классическая реализация Singleton</h3>
-<pre><code class="language-cpp">// Singleton.h
-class Singleton {
-  static Singleton* instance;
-  Singleton() {}
-  Singleton(const Singleton&amp;) = delete;
-  Singleton&amp; operator=(Singleton&amp;) = delete;
-public:
-
-  static Singleton * getInstance() {
-    if(!instance)
-      instance = new Singleton();
-    return instance;
-  }
-};
-</code></pre>
-<pre><code class="language-cpp">// Singleton.cpp
-#include &quot;Singleton.h&quot;
-
-Singleton* Singleton::instance = nullptr;
-</code></pre>
+                <h3><a id="user-content-борьба-с-фрагментацией-памяти" class="anchor" href="#борьба-с-фрагментацией-памяти" aria-hidden="true"></a>Борьба с фрагментацией памяти</h3>
+<p>Чтобы уменьшить проблему с фрагментацией в описаной выше модели управления памятью, можно завести несколько подобных структур, с блоками разного размера.</p>
+<p>Когда требуется выделить N байт, модель ищет экземпляр аллокатора c размером блока, больше или равным N.</p>
 
             </section>
         
             <section >
-                <h3><a id="user-content-реализация-синглтон-мэйерса" class="anchor" href="#реализация-синглтон-мэйерса" aria-hidden="true"></a>Реализация. Синглтон Мэйерса</h3>
-<pre><code class="language-cpp">// Singleton.h
-class Singleton {
-private:
-  Singleton() {}
-  Singleton(const Singleton&amp;) = delete;
-  Singleton&amp; operator=(Singleton&amp;) = delete;
-public:
-  static Singleton&amp; Instance() {
-    static Singleton instance;
-    return instance;
-  }
-};
-</code></pre>
+                <h3><a id="user-content-работа-в-условиях-многопоточности" class="anchor" href="#работа-в-условиях-многопоточности" aria-hidden="true"></a>Работа в условиях многопоточности</h3>
+<p>Самый простой подход добавить поддержку многопоточности в аллокатор – это добавить mutex или любой другой механизм синхронизации потоков. Недостатки такого решения очевидны.</p>
+<p>Чтобы как-то нивелировать недостатки, связанные с постоянной синхронизацией, создают локальный для каждого потока кэш.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-tcmalloc-от-google" class="anchor" href="#tcmalloc-от-google" aria-hidden="true"></a>TCMalloc* от Google</h3>
+<p>Основная идея: для каждого потока есть свой стек свободных блоков. Если надо выделить блок, который находится в локальном стеке, то не требуется времени на синхронизацию между потоками.</p>
+<p>Если локальный кэш переполняется, то идет обращение к глобальному стеку свободных блоков памяти.</p>
+<small>
+* TC = Thread Caching
+</small>
+            </section>
+        
+
+    </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-резюме-1" class="anchor" href="#резюме-1" aria-hidden="true"></a>Резюме</h3>
+<p>Существуют различные модели управления памятью, каждая из которых может хорошо работать в одних услосиях и плохо в других.</p>
+<p>Выбор модели необходимо осуществлять в зависимости от задачи, требований и других условий.</p>
+
+            </section>
+    
+
+
+
+    
+    <section>
+        <section >
+            <h3><a id="user-content-stl-allocator" class="anchor" href="#stl-allocator" aria-hidden="true"></a>STL Allocator</h3>
+<p>В некоторых частях стандартной библиотеки языка С++ используются специальные объекты для выделения и освобождения памяти, которые называются аллокаторами.</p>
+
+            </section>
+        
+            <section >
+                <h3><a id="user-content-stl-allocator-1" class="anchor" href="#stl-allocator-1" aria-hidden="true"></a>STL Allocator</h3>
+<p>STL аллокаторы используются как абстракция, преобразующая запросы на выделение памяти в физическую операцию её выделения.</p>
 
             </section>
         
@@ -763,73 +664,23 @@ public:
     
     <section>
         <section >
-            <h3><a id="user-content-observer" class="anchor" href="#observer" aria-hidden="true"></a>Observer</h3>
-<p>Наблюдатель – это поведенческий паттерн проектирования, который создаёт механизм подписки, позволяющий одним объектам следить и реагировать на события, происходящие в других объектах.</p>
+            <h3><a id="user-content-где-и-как-используются" class="anchor" href="#где-и-как-используются" aria-hidden="true"></a>Где и как используются</h3>
+<p>Все стандартные контейнеры используют распределители памяти для выделения динамической памяти. Это позволяет гибко изменять политики выделения/освобождения памяти в стандартных контейнерах.</p>
 
             </section>
         
             <section >
-                <h3><a id="user-content-интерфейс-publisher" class="anchor" href="#интерфейс-publisher" aria-hidden="true"></a>Интерфейс Publisher</h3>
-<pre><code class="language-cpp">struct Publisher {
-  struct Observer {
-    virtual void OnUpdate() = 0;
-  };
-  void AddObserver(const Observer&amp; observer);
-  void RemoveObserver(const Observer&amp; observer);
-  void DoSomething();
- private:
-  void Notify();
-  std::vector&lt;Observer*&gt; observers_;
-};
-</code></pre>
+                <h3><a id="user-content-где-и-как-используются-1" class="anchor" href="#где-и-как-используются-1" aria-hidden="true"></a>Где и как используются</h3>
+<pre><code class="language-cpp">template &lt;class T, class Alloc = allocator&lt;T&gt;&gt;
+class vector;
 
-            </section>
-        
-            <section >
-                <h3><a id="user-content-реализация-publisher" class="anchor" href="#реализация-publisher" aria-hidden="true"></a>Реализация Publisher</h3>
-<pre><code class="language-cpp">void Publisher::AddObserver(const Observer&amp; observer) {
-  observers_.push_back(&amp;observer);
-}
+template &lt;class T, class Alloc = allocator&lt;T&gt;&gt;
+class list;
 
-void Publisher::RemoveObserver(const Observer&amp; observer) {
-  auto it = std::remove(
-      observers_.begin(), observers_.end(), &amp;observer);
-  observers_.erase(it, observers_.end());
-}
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-реализация-publisher-1" class="anchor" href="#реализация-publisher-1" aria-hidden="true"></a>Реализация Publisher</h3>
-<pre><code class="language-cpp">void Publisher::Notify() {
-  for (auto* observer : observers_) {
-    observer-&gt;OnUpdate();
-  }
-}
-
-void Publisher::DoSomething() {
-  // Выполнение некоторых действий.
-  // Решаем, что необходимо умедомить наблюдателей о событии.
-  Notify();
-  // Продолжчаем выполнение функции.
-}
-</code></pre>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-использование-observer" class="anchor" href="#использование-observer" aria-hidden="true"></a>Использование Observer</h3>
-<pre><code class="language-cpp">struct Subscriber : public Publisher::Observer {
-  void OnUpdate() {
-    // ...
-  }
-};
-
-Publisher publisher;
-Subscriber subscriber;
-publisher.AddObserver(subscriber);
-publisher.DoSomething();
+template &lt;class Key, class T,
+          class Hash = hash&lt;Key&gt;, class Pred = equal_to&lt;Key&gt;,
+          class Alloc = allocator&lt;pair&lt;const Key,T&gt;&gt; &gt;
+class unordered_map;
 </code></pre>
 
             </section>
@@ -843,339 +694,37 @@ publisher.DoSomething();
     
         <section >
             
-            <h3><a id="user-content-структуры-данных-в-с" class="anchor" href="#структуры-данных-в-с" aria-hidden="true"></a>Структуры данных в С++</h3>
-<style type="text/css">
-  .reveal table {
-    font-size: 0.75em;
-</style>
-<table>
-<thead>
-<tr>
-<th>Структура</th>
-<th style="text-align:left">STL контейнер</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>массив</td>
-<td style="text-align:left"><code>std::vector</code>, <code>std::array</code></td>
-</tr>
-<tr>
-<td>двусвязный список</td>
-<td style="text-align:left"><code>std::list</code></td>
-</tr>
-<tr>
-<td>односвязный список</td>
-<td style="text-align:left"><code>std::forward_list</code></td>
-</tr>
-<tr>
-<td>красно-черное дерево</td>
-<td style="text-align:left"><code>std::map</code>, <code>std::set</code></td>
-</tr>
-<tr>
-<td>хэш таблица</td>
-<td style="text-align:left"><code>std::unordered_map</code>, <code>std::unordered_set</code></td>
-</tr>
-<tr>
-<td>очередь</td>
-<td style="text-align:left"><code>std::queue</code></td>
-</tr>
-<tr>
-<td>стек</td>
-<td style="text-align:left"><code>std::stack</code></td>
-</tr>
-</tbody>
-</table>
-
-            </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-сложность-операций-в-среднем" class="anchor" href="#сложность-операций-в-среднем" aria-hidden="true"></a>Сложность операций (в среднем)</h3>
-<table>
-<thead>
-<tr>
-<th>Контейнер</th>
-<th>Индексация</th>
-<th>Поиск</th>
-<th>Вставка</th>
-<th>Удаление</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>vector</code></td>
-<td><code>O(1)</code></td>
-<td><code>O(N)</code></td>
-<td><code>O(N)*</code></td>
-<td><code>O(N)*</code></td>
-</tr>
-<tr>
-<td><code>list</code></td>
-<td><code>O(N)</code></td>
-<td><code>O(N)</code></td>
-<td><code>O(1)</code></td>
-<td><code>O(1)</code></td>
-</tr>
-<tr>
-<td><code>map</code></td>
-<td><code>n/a</code></td>
-<td><code>O(logN)</code></td>
-<td><code>O(logN)</code></td>
-<td><code>O(logN)</code></td>
-</tr>
-<tr>
-<td><code>unordered_map</code></td>
-<td><code>n/a</code></td>
-<td><code>O(1)</code></td>
-<td><code>O(1)</code></td>
-<td><code>O(1)</code></td>
-</tr>
-</tbody>
-</table>
-<p><code>*</code> - аппроксимированная сложность вставки и удаления <strong>в конец</strong> массива – <code>O(1)</code></p>
-
-            </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-stl" class="anchor" href="#stl" aria-hidden="true"></a>STL</h3>
-<p><em>STL – набор <strong>согласованных</strong> обобщённых алгоритмов, контейнеров, средств доступа к их содержимому и различных вспомогательных функций в C++</em></p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-алгоритмы-stl" class="anchor" href="#алгоритмы-stl" aria-hidden="true"></a>Алгоритмы STL</h3>
-<p>Алгоритмы STL реализованы в виде глобальных функций, которые работают с использованием итераторов.</p>
-<p>Это означает, что реализованный алгоритм будет работать со всеми контейнерами, которые предоставляют набор итераторов.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-некоторые-из-алгоритмов" class="anchor" href="#некоторые-из-алгоритмов" aria-hidden="true"></a>Некоторые из алгоритмов</h3>
-<table>
-<thead>
-<tr>
-<th>Алгоритм</th>
-<th style="text-align:left">Описание</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>count_if</code></td>
-<td style="text-align:left">подсчет элементов</td>
-</tr>
-<tr>
-<td><code>find_if</code></td>
-<td style="text-align:left">нахождение элемента</td>
-</tr>
-<tr>
-<td><code>transform</code></td>
-<td style="text-align:left">преобразование диапазона</td>
-</tr>
-<tr>
-<td><code>all_of</code></td>
-<td style="text-align:left">все элементы удовлетворяют условию</td>
-</tr>
-<tr>
-<td><code>remove_if</code></td>
-<td style="text-align:left">удаление из диапазона</td>
-</tr>
-<tr>
-<td><code>replace_if</code></td>
-<td style="text-align:left">замена элементов</td>
-</tr>
-<tr>
-<td><code>merge</code></td>
-<td style="text-align:left">слияние сортированных диапазонов</td>
-</tr>
-<tr>
-<td><code>is_sorted</code></td>
-<td style="text-align:left">сортирован ли диапазон</td>
-</tr>
-<tr>
-<td><code>lower_bound</code></td>
-<td style="text-align:left">возвращает позицию на элемент, который <strong>не меньше</strong> чем аргумент</td>
-</tr>
-</tbody>
-</table>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-разбор-аргументов" class="anchor" href="#разбор-аргументов" aria-hidden="true"></a>Разбор аргументов</h3>
-<pre><code class="language-cpp">auto it = std::find_if(
-  v.begin(), // начало диапозона.
-  v.end(), // конец диапозона.
-  [](const auto&amp; el) { // предикат.
-    return el.size() &gt; 5;
-  }
-)
-</code></pre>
-<p>Сначала задается диапазон <code>[first, last)</code>, элемент <code>last</code> не включается в диапазон. Далее идет предикат применяющийся к диапазону.</p>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-современный-с" class="anchor" href="#современный-с" aria-hidden="true"></a>Современный С++</h3>
-
-            </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-stdoptional" class="anchor" href="#stdoptional" aria-hidden="true"></a><code>std::optional</code></h3>
-<p>Класс <code>std::optional</code> управляет опциональным значением, т. е. значением, которое может присутствовать или отсутствовать.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-пример-1" class="anchor" href="#пример-1" aria-hidden="true"></a>Пример</h3>
-<pre><code class="language-cpp">std::optional&lt;int&gt; TryParseNumber(const std::string&amp; str);
-</code></pre>
-<pre><code class="language-cpp">auto num = TryParseNumber(&quot;123&quot;);
-if (num) {
-  std::cout &lt;&lt; num.value(); // или *num;
-}
-std::cout &lt;&lt; num.value_or(0);
-</code></pre>
-<pre><code class="language-cpp">auto num = TryParseNumber(&quot;Not number&quot;);
-if (num) {
-  std::cout &lt;&lt; num.value(); // или *num;
-}
-std::cout &lt;&lt; num.value_or(0);
-</code></pre>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-    <section>
-        <section >
-            <h3><a id="user-content-stdany" class="anchor" href="#stdany" aria-hidden="true"></a><code>std::any</code></h3>
-<p>Класс <code>std::any</code> – типобезопасносный контейнер для одиночного значения любого типа.</p>
-
-            </section>
-        
-            <section >
-                <h3><a id="user-content-пример-2" class="anchor" href="#пример-2" aria-hidden="true"></a>Пример</h3>
-<pre><code class="language-cpp">std::any value;
-
-value = 1;
-value = std::string(&quot;Something&quot;);
-value = Student{&quot;Ivanov&quot;, &quot;BMSTU&quot;, 2019};
-std::string name = std::any_cast&lt;Student&gt;(value).Name;
-</code></pre>
-
-            </section>
-        
-
-    </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-stdtuple" class="anchor" href="#stdtuple" aria-hidden="true"></a><code>std::tuple</code></h3>
-<p>Класс <code>std::tuple</code> представляет собой набор фиксированного размера различный типов.</p>
-<pre><code class="language-cpp">std::tuple&lt;std::string, std::string, int, float&gt; value;
-value = std::make_tuple(&quot;ABC&quot;, &quot;qwerty&quot;, 1, 4.3);
-
-std::string first;
-std::string second;
-int third = 0;
-float fourth = 0;
-std::tie(first, second, third, fourth) = value;
-
-std::cout &lt;&lt; first &lt;&lt; second &lt;&lt; third &lt;&lt; fourth;
-</code></pre>
-
-            </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-stdvariant" class="anchor" href="#stdvariant" aria-hidden="true"></a><code>std::variant</code></h3>
-<p>Класс <code>std::variant</code> представляет собой типобезопасное объединение (union).</p>
-<pre><code class="language-cpp">std::variant&lt;int, float&gt; v;
-v = 12
-int a = std::get&lt;int&gt;(v);
-int b = std::get&lt;0&gt;(v);
-
-try {
-  std::get&lt;float&gt;(v);
-}
-catch (const std::bad_variant_access&amp;) {}
-</code></pre>
-
-            </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-структурное-связывание" class="anchor" href="#структурное-связывание" aria-hidden="true"></a>Структурное связывание</h3>
-<h5><a id="user-content-до" class="anchor" href="#до" aria-hidden="true"></a>До</h5>
-<pre><code class="language-cpp">std::map&lt;std::string, int&gt; students = GetGtoupById(31);
-
-for (const auto&amp; e : students) {
-  std::cout &lt;&lt; e.first &lt;&lt; &quot; has mark = &quot; &lt;&lt; e.second;
-}
-</code></pre>
-<h5><a id="user-content-после" class="anchor" href="#после" aria-hidden="true"></a>После</h5>
-<pre><code class="language-cpp">std::map&lt;std::string, int&gt; students = GetGtoupById(31);
-
-for (const auto&amp; [name, mark] : students) {
-  std::cout &lt;&lt; name &lt;&lt; &quot; has mark = &quot; &lt;&lt; mark;
-}
-</code></pre>
-
-            </section>
-    
-
-
-
-    
-        <section >
-            
-            <h3><a id="user-content-домашнее-задание" class="anchor" href="#домашнее-задание" aria-hidden="true"></a>Домашнее задание</h3>
+            <h3><a id="user-content-как-работают-аллокаторы" class="anchor" href="#как-работают-аллокаторы" aria-hidden="true"></a>Как работают аллокаторы</h3>
 <ul>
-<li>прямая передача (perfect forward)</li>
-<li>constexpr</li>
-<li>constexpr if</li>
-<li>noexcept</li>
+<li><code>allocate(size_t N)</code> – выделяет память для N элементов (<code>n * sizeof(T)</code>)</li>
+<li><code>construct(void* p, Args&amp;&amp;... args)</code> – инициализирует элемент по адресу <code>p</code>, используя аргументы <code>args</code></li>
+<li><code>destroy(void *p)</code> – уничтожает элемент по адресу <code>p</code></li>
+<li><code>deallocate(void* p, size_t N)</code> – освобождает память по адресу <code>p</code> в которой располагается N элементов.</li>
 </ul>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-пользовательские-аллокаторы" class="anchor" href="#пользовательские-аллокаторы" aria-hidden="true"></a>Пользовательские аллокаторы</h3>
+<p>Начиная с С++11 для создания собственного аллокатора требуется определить только функции <code>allocate</code> и <code>deallocate</code>.</p>
+<p>По умолчанию, функция <code>construct</code> использует <code>placement new</code>, а <code>destroy</code> явно вызовает деструктор.</p>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3><a id="user-content-резюме-2" class="anchor" href="#резюме-2" aria-hidden="true"></a>Резюме</h3>
+<p>STL аллокаторы являются еще абстракцией в библиотеке STL, которая помогает использовать различные модели управления памятью в ваших приложениях без переписывания большой части кода.</p>
+<p>Так же аллокаторы могут быть полезны при профилировании вашего приложения.</p>
 
             </section>
     
@@ -1187,8 +736,11 @@ for (const auto&amp; [name, mark] : students) {
             
             <h3><a id="user-content-литература" class="anchor" href="#литература" aria-hidden="true"></a>Литература</h3>
 <ul>
-<li><a href="https://habr.com/en/post/164221/">https://habr.com/en/post/164221/</a></li>
-<li><a href="https://refactoring.guru/">https://refactoring.guru/</a></li>
+<li><a href="http://www.memorymanagement.org/index.html">Memory Management Reference</a></li>
+<li><a href="http://theboostcpplibraries.com/boost.pool">The Boost C++ Libraries : Boost.Pool</a></li>
+<li><a href="http://www.amse.ru/courses/cpp2/2011_03_21.html">Перегрузка операторов new и delete</a></li>
+<li><a href="http://cpp.sh/5eft">Пример распределителя в С++11</a></li>
+<li>Александреску A. – Современное проектирование на С++</li>
 </ul>
 
             </section>
