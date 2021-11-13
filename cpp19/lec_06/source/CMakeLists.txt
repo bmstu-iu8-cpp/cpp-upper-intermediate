@@ -20,6 +20,7 @@ HunterGate(
 
 project(sync_lecture)
 
+find_package(Threads REQUIRED)
 hunter_add_package(Boost)
 find_package(Boost CONFIG REQUIRED)
 
@@ -32,5 +33,5 @@ target_include_directories(server
   PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(server Boost::boost)
+target_link_libraries(server Boost::boost Threads::Threads)
 
